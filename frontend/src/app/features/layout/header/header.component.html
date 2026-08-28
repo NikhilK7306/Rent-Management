@@ -1,0 +1,45 @@
+<header class="header" role="banner">
+  <div class="header-left">
+    <button
+      class="header-menu-btn"
+      (click)="toggleSidebar.emit()"
+      type="button"
+      aria-label="Toggle navigation menu"
+      aria-expanded="false"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
+    <nav class="breadcrumb" aria-label="Breadcrumb" *ngIf="breadcrumb.length > 0">
+      <ol class="breadcrumb-list">
+        @for (item of breadcrumb; track item.path; let last = $last) {
+          <li class="breadcrumb-item">
+            @if (!last) {
+              <a [routerLink]="item.path" class="breadcrumb-link">{{ item.label }}</a>
+              <span class="breadcrumb-separator" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </span>
+            } @else {
+              <span class="breadcrumb-current" aria-current="page">{{ item.label }}</span>
+            }
+          </li>
+        }
+      </ol>
+    </nav>
+  </div>
+
+  <div class="header-right">
+    <div class="header-actions">
+      <div class="connection-status">
+        <span class="status-indicator connected" aria-label="System connected"></span>
+        <span class="status-text">Connected</span>
+      </div>
+    </div>
+  </div>
+</header>

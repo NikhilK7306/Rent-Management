@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Payments</h1>
+    <button class="btn btn-primary" (click)="openAddModal()">Record Payment</button>
+  </div>
+
+  <div class="filters">
+    <div class="search-box">
+      <input type="text" placeholder="Search by tenant, property, reference..." [(ngModel)]="searchTerm" (keydown.enter)="onSearch()" />
+      <button class="btn btn-secondary" (click)="onSearch()">Search</button>
+    </div>
+    <div class="filter-box">
+      <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+        <option value="">All Statuses</option>
+        @for (status of statuses; track status.value) {
+          <option [value]="status.value">{{ status.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-box">
+      <select [(ngModel)]="paymentMethodFilter" (change)="onPaymentMethodFilterChange()">
+        <option value="">All Methods</option>
+        @for (method of paymentMethods; track method.value) {
+          <option [value]="method.value">{{ method.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-box">
+      <input type="date" [(ngModel)]="startDateFilter" (change)="onDateFilterChange()" placeholder="Start Date" />
+    </div>
+    <div class="filter-box">
+      <input type="date" [(ngModel)]="endDateFilter" (change)="onDateFilterChange()" placeholder="End Date" />
+    </div>
+    <button class="btn btn-outline" (click)="clearFilters()" [disabled]="!searchTerm() && !statusFilter() && !paymentMethodFilter() && !startDateFilter() && !endDateFilter()">Clear Filters</button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading">Loading payments...</div>
+  } @else if (payments().length === 0) {
+    <div class="empty-state">
+      <p>No payments have been recorded yet.</p>
+      <button class="btn btn-primary" (click)="openAddModal()">Record Payment</button>
+    </div>
+  } @else {
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Payment ID</th>
+            <th>Tenant</th>
+            <th>Property</th>
+            <th>Rent Period</th>
+            <th>Rent Amount</th>
+            <th>Paid Amount</th>
+            <th>Outstanding</th>
+            <th>Payment Date</th>
+            <th>Method</th>
+            <th>Reference</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payment of payments(); track payment.id) {
+            <tr>
+              <td>{{ payment.id }}</td>
+              <td>{{ payment.rent.tenant.fullName }}</td>
+              <td>{{ payment.rent.property.propertyName }} ({{ payment.rent.property.propertyCode }})</td>
+              <td>{{ getRentPeriodDisplay(payment.rent) }}</td>
+              <td>{{ formatCurrency(payment.rent.monthlyRent) }}</td>
+              <td class="amount-paid">{{ formatCurrency(payment.amount) }}</td>
+              <td class="outstanding">{{ formatCurrency(getOutstanding(payment.rent)) }}</td>
+              <td>{{ formatDate(payment.paymentDate) }}</td>
+              <td>
+                <span class="method-badge" [style.background-color]="getMethodColor(payment.paymentMethod)">
+                  {{ payment.paymentMethod }}
+                </span>
+              </td>
+              <td>{{ payment.referenceNumber || '—' }}</td>
+              <td>
+                <span class="status-badge" [style.background-color]="getStatusColor(payment.status)">
+                  {{ payment.status }}
+                </span>
+              </td>
+              <td class="actions">
+                <button class="btn btn-sm btn-outline" (click)="openDetailModal(payment)">View</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="btn btn-sm btn-outline" (click)="onPageChange(currentPage() - 1)" [disabled]="currentPage() === 0">Previous</button>
+        <span class="page-info">Page {{ currentPage() + 1 }} of {{ totalPages() }} ({{ totalElements() }} total)</span>
+        <button class="btn btn-sm btn-outline" (click)="onPageChange(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">Next</button>
+      </div>
+    }
+  }
+
+  @if (showAddModal()) {
+    <app-payment-form [isOpen]="showAddModal()" [availableRents]="availableRents()" (close)="closeAddModal()" (saved)="onPaymentCreated()"></app-payment-form>
+  }
+
+  @if (showDetailModal()) {
+    <app-payment-detail [isOpen]="showDetailModal()" [payment]="selectedPayment()" (close)="closeDetailModal()"></app-payment-detail>
+  }
+</div>

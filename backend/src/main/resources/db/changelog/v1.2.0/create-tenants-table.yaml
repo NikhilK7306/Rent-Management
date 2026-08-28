@@ -1,0 +1,128 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rentms
+      comment: Create tenants table
+      changes:
+        - createTable:
+            tableName: tenants
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: mobile_number
+                  type: VARCHAR(15)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: email
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: address
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: property_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2
+      author: rentms
+      comment: Create index on mobile_number for unique lookups
+      changes:
+        - createIndex:
+            tableName: tenants
+            indexName: idx_tenants_mobile_number
+            columns:
+              - column:
+                  name: mobile_number
+            unique: true
+
+  - changeSet:
+      id: 3
+      author: rentms
+      comment: Create index on full_name for search
+      changes:
+        - createIndex:
+            tableName: tenants
+            indexName: idx_tenants_full_name
+            columns:
+              - column:
+                  name: full_name
+
+  - changeSet:
+      id: 4
+      author: rentms
+      comment: Create index on status for filtering
+      changes:
+        - createIndex:
+            tableName: tenants
+            indexName: idx_tenants_status
+            columns:
+              - column:
+                  name: status
+
+  - changeSet:
+      id: 5
+      author: rentms
+      comment: Create index on property_id for join queries
+      changes:
+        - createIndex:
+            tableName: tenants
+            indexName: idx_tenants_property_id
+            columns:
+              - column:
+                  name: property_id
+
+  - changeSet:
+      id: 6
+      author: rentms
+      comment: Add foreign key constraint for property_id
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: tenants
+            baseColumnNames: property_id
+            constraintName: fk_tenants_property_id
+            referencedTableName: properties
+            referencedColumnNames: id
+            onDelete: SET NULL
+            onUpdate: CASCADE
+
+  - changeSet:
+      id: 7
+      author: rentms
+      comment: Add check constraint for valid email format
+      changes:
+        - sql:
+            sql: ALTER TABLE tenants ADD CONSTRAINT chk_tenants_email_format CHECK (email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')

@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - include:
+      file: classpath:db/changelog/v1.0.0/init-schema.yaml
+  - include:
+      file: classpath:db/changelog/v1.0.0/seed-data.yaml
+  - include:
+      file: classpath:db/changelog/v1.0.1/update-admin-password.yaml
+  - include:
+      file: classpath:db/changelog/v1.0.2/fix-admin-password.yaml
+  - include:
+      file: classpath:db/changelog/v1.1.0/create-properties-table.yaml
+  - include:
+      file: classpath:db/changelog/v1.2.0/create-tenants-table.yaml
+  - include:
+      file: classpath:db/changelog/v1.3.0/create-rents-table.yaml
+  - include:
+      file: classpath:db/changelog/v1.4.0/create-payments-table.yaml
+  - include:
+      file: classpath:db/changelog/v1.5.0/update-rents-status-constraint.yaml

@@ -1,0 +1,211 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rentms
+      comment: Create rents table
+      changes:
+        - createTable:
+            tableName: rents
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: tenant_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: property_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rent_month
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rent_year
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: monthly_rent
+                  type: NUMERIC(12,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: due_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: paid_date
+                  type: DATE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: paid_amount
+                  type: NUMERIC(12,2)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2
+      author: rentms
+      comment: Create foreign key for tenant_id
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: rents
+            baseColumnNames: tenant_id
+            constraintName: fk_rents_tenant_id
+            referencedTableName: tenants
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: CASCADE
+
+  - changeSet:
+      id: 3
+      author: rentms
+      comment: Create foreign key for property_id
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: rents
+            baseColumnNames: property_id
+            constraintName: fk_rents_property_id
+            referencedTableName: properties
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: CASCADE
+
+  - changeSet:
+      id: 4
+      author: rentms
+      comment: Create index on tenant_id
+      changes:
+        - createIndex:
+            tableName: rents
+            indexName: idx_rents_tenant_id
+            columns:
+              - column:
+                  name: tenant_id
+
+  - changeSet:
+      id: 5
+      author: rentms
+      comment: Create index on property_id
+      changes:
+        - createIndex:
+            tableName: rents
+            indexName: idx_rents_property_id
+            columns:
+              - column:
+                  name: property_id
+
+  - changeSet:
+      id: 6
+      author: rentms
+      comment: Create index on status
+      changes:
+        - createIndex:
+            tableName: rents
+            indexName: idx_rents_status
+            columns:
+              - column:
+                  name: status
+
+  - changeSet:
+      id: 7
+      author: rentms
+      comment: Create index on rent period
+      changes:
+        - createIndex:
+            tableName: rents
+            indexName: idx_rents_rent_period
+            columns:
+              - column:
+                  name: rent_year
+              - column:
+                  name: rent_month
+
+  - changeSet:
+      id: 8
+      author: rentms
+      comment: Create index on due_date
+      changes:
+        - createIndex:
+            tableName: rents
+            indexName: idx_rents_due_date
+            columns:
+              - column:
+                  name: due_date
+
+  - changeSet:
+      id: 9
+      author: rentms
+      comment: Create unique constraint for tenant/property/period
+      changes:
+        - addUniqueConstraint:
+            tableName: rents
+            constraintName: uq_rents_tenant_property_period
+            columnNames: tenant_id, property_id, rent_year, rent_month
+
+  - changeSet:
+      id: 10
+      author: rentms
+      comment: Add check constraint for valid status
+      changes:
+        - sql:
+            sql: ALTER TABLE rents ADD CONSTRAINT chk_rents_status CHECK (status IN ('PENDING', 'PAID', 'OVERDUE'))
+
+  - changeSet:
+      id: 11
+      author: rentms
+      comment: Add check constraint for valid rent month
+      changes:
+        - sql:
+            sql: ALTER TABLE rents ADD CONSTRAINT chk_rents_month CHECK (rent_month >= 1 AND rent_month <= 12)
+
+  - changeSet:
+      id: 12
+      author: rentms
+      comment: Add check constraint for valid rent year
+      changes:
+        - sql:
+            sql: ALTER TABLE rents ADD CONSTRAINT chk_rents_year CHECK (rent_year >= 2020 AND rent_year <= 2100)
+
+  - changeSet:
+      id: 13
+      author: rentms
+      comment: Add check constraint for monthly rent positive
+      changes:
+        - sql:
+            sql: ALTER TABLE rents ADD CONSTRAINT chk_rents_monthly_rent_positive CHECK (monthly_rent > 0)
+
+  - changeSet:
+      id: 14
+      author: rentms
+      comment: Add check constraint for paid amount
+      changes:
+        - sql:
+            sql: ALTER TABLE rents ADD CONSTRAINT chk_rents_paid_amount CHECK (paid_amount IS NULL OR paid_amount >= 0)

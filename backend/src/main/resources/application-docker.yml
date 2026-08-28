@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:rentdb}
+    username: ${DB_USERNAME:rentuser}
+    password: ${DB_PASSWORD:rentpass}
+  liquibase:
+    contexts: docker
+  mvc:
+    formcontent:
+      filter:
+        enabled: false
+
+jwt:
+  secret: ${JWT_SECRET:dev-secret-key-min-256-bits-for-hmac-sha256-change-in-production}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+logging:
+  level:
+    com.rentms: DEBUG
+    org.springframework.security: DEBUG

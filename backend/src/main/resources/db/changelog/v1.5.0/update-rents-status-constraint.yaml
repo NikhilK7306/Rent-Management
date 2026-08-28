@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rentms
+      comment: Update status check constraint to include PARTIAL status
+      changes:
+        - sql:
+            sql: ALTER TABLE rents DROP CONSTRAINT chk_rents_status
+        - sql:
+            sql: ALTER TABLE rents ADD CONSTRAINT chk_rents_status CHECK (status IN ('PENDING', 'PARTIAL', 'PAID', 'OVERDUE'))

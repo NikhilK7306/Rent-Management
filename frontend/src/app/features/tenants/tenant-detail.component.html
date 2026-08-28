@@ -1,0 +1,214 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Tenant Details</h2>
+      <button class="modal-close" (click)="onClose()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      @if (tenant(); as t) {
+        @if (errorMessage()) {
+          <div class="alert alert-error">{{ errorMessage() }}</div>
+        }
+
+        <div class="detail-section">
+          <h3>Personal Information</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Full Name</span>
+              <span class="detail-value">{{ t.fullName }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Mobile Number</span>
+              <span class="detail-value">{{ t.mobileNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Email</span>
+              <span class="detail-value">{{ t.email || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Address</span>
+              <span class="detail-value">{{ t.address || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Status</h3>
+          <div class="detail-item">
+            <span class="detail-label">Current Status</span>
+            <span class="detail-value">
+              <span class="status-badge" [ngClass]="getStatusClass(t.status)">{{ t.status }}</span>
+            </span>
+          </div>
+          <div class="detail-actions">
+            <button class="btn btn-sm" [ngClass]="t.status === 'ACTIVE' ? 'btn-danger' : 'btn-success'" (click)="openStatusConfirm(t.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')" [disabled]="isUpdatingStatus()">
+              {{ t.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Property Assignment</h3>
+          <div class="detail-item">
+            <span class="detail-label">Assigned Property</span>
+            <span class="detail-value" [class.assigned]="isPropertyAssigned(t.property)">{{ getPropertyDisplay(t.property) }}</span>
+          </div>
+          <div class="detail-actions">
+            @if (!isPropertyAssigned(t.property)) {
+              @if (canAssignProperty()) {
+                <button class="btn btn-primary btn-sm" (click)="openAssignModal()" [disabled]="isAssigning()">
+                  Assign Property
+                </button>
+              } @else {
+                <span class="assignment-disabled">
+                  @if (!isTenantActive()) {
+                    <span class="disabled-reason">Tenant is inactive. Activate tenant to assign property.</span>
+                  }
+                </span>
+              }
+            } @else {
+              <button class="btn btn-outline btn-sm" (click)="openChangeModal()" [disabled]="isChanging() || !canAssignProperty()">
+                Change Property
+              </button>
+              <button class="btn btn-outline btn-sm" (click)="openUnassignConfirm()" [disabled]="isUnassigning()">
+                Unassign Property
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Timestamps</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Created At</span>
+              <span class="detail-value">{{ formatDate(t.createdAt) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Updated At</span>
+              <span class="detail-value">{{ formatDate(t.updatedAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (showAssignModal()) {
+          <div class="modal-overlay nested-modal-overlay" (click)="closeAssignModal()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h2>Assign Property</h2>
+                <button class="modal-close" (click)="closeAssignModal()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <p>Select a property to assign to <strong>{{ t.fullName }}</strong>:</p>
+                <div class="form-group">
+                  <label for="assignProperty">Property <span class="required">*</span></label>
+                  <select id="assignProperty" [(ngModel)]="selectedAssignPropertyId">
+                    <option [value]="0" disabled>Select Property</option>
+                    @for (prop of assignableProperties(); track prop.id) {
+                      <option [value]="prop.id">{{ prop.propertyCode }} — {{ prop.propertyName }} ({{ prop.propertyType }}) — ₹{{ prop.monthlyRent | number:'1.0-0' }}/month</option>
+                    }
+                  </select>
+                  @if (!hasAssignableProperties()) {
+                    <p class="no-properties">No available properties to assign. All active properties are already assigned.</p>
+                  }
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline" (click)="closeAssignModal()">Cancel</button>
+                  <button type="button" class="btn btn-primary" (click)="confirmAssign()" [disabled]="isAssigning() || selectedAssignPropertyId() === 0">
+                    @if (isAssigning()) { Assigning... } @else { Assign }
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (showChangeModal()) {
+          <div class="modal-overlay nested-modal-overlay" (click)="closeChangeModal()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h2>Change Property</h2>
+                <button class="modal-close" (click)="closeChangeModal()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <p>Select a new property for <strong>{{ t.fullName }}</strong> (currently assigned to <strong>{{ getPropertyDisplay(t.property) }}</strong>):</p>
+                <div class="form-group">
+                  <label for="changeProperty">New Property <span class="required">*</span></label>
+                  <select id="changeProperty" [(ngModel)]="selectedChangePropertyId">
+                    <option [value]="0" disabled>Select Property</option>
+                    @for (prop of assignableProperties(); track prop.id) {
+                      @if (prop.id !== t.property?.id) {
+                        <option [value]="prop.id">{{ prop.propertyCode }} — {{ prop.propertyName }} ({{ prop.propertyType }}) — ₹{{ prop.monthlyRent | number:'1.0-0' }}/month</option>
+                      }
+                    }
+                  </select>
+                  @if (!hasOtherAssignableProperties()) {
+                    <p class="no-properties">No other available properties to change to.</p>
+                  }
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline" (click)="closeChangeModal()">Cancel</button>
+                  <button type="button" class="btn btn-primary" (click)="confirmChange()" [disabled]="isChanging() || selectedChangePropertyId() === 0">
+                    @if (isChanging()) { Changing... } @else { Change }
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (showUnassignConfirm()) {
+          <div class="modal-overlay nested-modal-overlay" (click)="closeUnassignConfirm()">
+            <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h2>Unassign Property</h2>
+                <button class="modal-close" (click)="closeUnassignConfirm()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <p>Are you sure you want to unassign <strong>{{ t.fullName }}</strong> from <strong>{{ getPropertyDisplay(t.property) }}</strong>?</p>
+                <p class="warning-text">The tenant will no longer have a property assigned. This action cannot be undone.</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline" (click)="closeUnassignConfirm()">Cancel</button>
+                <button type="button" class="btn btn-danger" (click)="confirmUnassign()" [disabled]="isUnassigning()">
+                  @if (isUnassigning()) { Unassigning... } @else { Unassign }
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (showStatusConfirm()) {
+          <div class="modal-overlay nested-modal-overlay" (click)="closeStatusConfirm()">
+            <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h2>{{ t.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }} Tenant</h2>
+                <button class="modal-close" (click)="closeStatusConfirm()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <p>Are you sure you want to {{ t.status === 'ACTIVE' ? 'deactivate' : 'activate' }} <strong>{{ t.fullName }}</strong>?</p>
+                @if (t.status === 'ACTIVE') {
+                  <p class="warning-text">An inactive tenant cannot be assigned to a property.</p>
+                }
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline" (click)="closeStatusConfirm()">Cancel</button>
+                <button type="button" class="btn" [ngClass]="t.status === 'ACTIVE' ? 'btn-danger' : 'btn-success'" (click)="confirmStatusChange()" [disabled]="isUpdatingStatus()">
+                  @if (isUpdatingStatus()) {
+                    Updating...
+                  } @else {
+                    {{ t.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+      } @else {
+        <p class="loading">Loading tenant details...</p>
+      }
+    </div>
+  </div>
+</div>

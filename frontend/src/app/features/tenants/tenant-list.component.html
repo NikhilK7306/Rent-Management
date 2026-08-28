@@ -1,0 +1,95 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Tenants</h1>
+    <button class="btn btn-primary" (click)="openAddModal()">Add Tenant</button>
+  </div>
+
+  <div class="filters">
+    <div class="search-box">
+      <input type="text" placeholder="Search by name, mobile, email..." [(ngModel)]="searchTerm" (keydown.enter)="onSearch()" />
+      <button class="btn btn-secondary" (click)="onSearch()">Search</button>
+    </div>
+    <div class="filter-box">
+      <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+        <option value="">All Statuses</option>
+        <option value="ACTIVE">Active</option>
+        <option value="INACTIVE">Inactive</option>
+      </select>
+    </div>
+    <button class="btn btn-outline" (click)="clearFilters()" [disabled]="!searchTerm() && !statusFilter()">Clear Filters</button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading">Loading tenants...</div>
+  } @else if (tenants().length === 0) {
+    <div class="empty-state">
+      <p>No tenants have been onboarded yet.</p>
+      <button class="btn btn-primary" (click)="openAddModal()">Add Tenant</button>
+    </div>
+  } @else {
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Property</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tenant of tenants(); track tenant.id) {
+            <tr>
+              <td>{{ tenant.fullName }}</td>
+              <td>{{ tenant.mobileNumber }}</td>
+              <td>{{ tenant.email || '—' }}</td>
+              <td [class.assigned]="isPropertyAssigned(tenant.property)">
+            @if (isPropertyAssigned(tenant.property)) {
+              <button class="property-link" (click)="navigateToProperty(tenant.property!.id)">{{ getPropertyDisplay(tenant.property) }}</button>
+            } @else {
+              {{ getPropertyDisplay(tenant.property) }}
+            }
+          </td>
+              <td><span class="status-badge" [ngClass]="getStatusClass(tenant.status)">{{ tenant.status }}</span></td>
+              <td>{{ formatDate(tenant.createdAt) }}</td>
+              <td class="actions">
+                <button class="btn btn-sm btn-outline" (click)="openDetailModal(tenant)">View</button>
+                <button class="btn btn-sm btn-outline" (click)="openEditModal(tenant)">Edit</button>
+                <button class="btn btn-sm" [ngClass]="tenant.status === 'ACTIVE' ? 'btn-danger' : 'btn-success'" (click)="onStatusChange(tenant, tenant.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')">
+                  {{ tenant.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="btn btn-sm btn-outline" (click)="onPageChange(currentPage() - 1)" [disabled]="currentPage() === 0">Previous</button>
+        <span class="page-info">Page {{ currentPage() + 1 }} of {{ totalPages() }} ({{ totalElements() }} total)</span>
+        <button class="btn btn-sm btn-outline" (click)="onPageChange(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">Next</button>
+      </div>
+    }
+  }
+
+  @if (showAddModal()) {
+    <app-tenant-form [isOpen]="showAddModal()" (close)="closeAddModal()" (saved)="onTenantCreated()"></app-tenant-form>
+  }
+
+  @if (showEditModal()) {
+    <app-tenant-form [isOpen]="showEditModal()" [tenant]="editingTenant()" (close)="closeEditModal()" (saved)="onTenantUpdated()"></app-tenant-form>
+  }
+
+  @if (showDetailModal()) {
+    <app-tenant-detail [tenant]="selectedTenant()" [assignableProperties]="assignableProperties()" (close)="closeDetailModal()"></app-tenant-detail>
+  }
+</div>

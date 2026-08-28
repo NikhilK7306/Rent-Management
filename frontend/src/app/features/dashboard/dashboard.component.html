@@ -1,0 +1,205 @@
+<div class="dashboard-page">
+  <header class="page-header">
+    <h1 class="page-title">{{ dashboardData?.message || 'Dashboard' }}</h1>
+    <p class="page-subtitle">System overview and status</p>
+  </header>
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading dashboard...</p>
+    </div>
+  } @else if (errorMessage) {
+    <div class="alert alert-error" role="alert">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+      <button class="btn btn-outline btn-sm" (click)="loadDashboard()" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Retry
+      </button>
+    </div>
+  } @else if (dashboardData) {
+    <div class="dashboard-grid grid grid-2">
+      <div class="card welcome-card">
+        <div class="card-header">
+          <h2 class="card-title">Welcome</h2>
+        </div>
+        <div class="card-body">
+          <div class="welcome-content">
+            <div class="welcome-avatar">
+              {{ dashboardData.adminName?.charAt(0) || 'A' }}
+            </div>
+            <div class="welcome-info">
+              <h3>{{ dashboardData.adminName }}</h3>
+              <p class="welcome-role">{{ dashboardData.role }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card stats-card">
+        <div class="card-header">
+          <h2 class="card-title">Property Statistics</h2>
+        </div>
+        <div class="card-body">
+          <div class="stat-item">
+            <div class="stat-icon properties">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value">{{ dashboardData.propertyCount }}</span>
+              <span class="stat-label">Properties</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card status-card">
+        <div class="card-header">
+          <h2 class="card-title">System Status</h2>
+        </div>
+        <div class="card-body">
+          <div class="status-grid">
+            <div class="status-item">
+              <div class="status-icon system">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                  <path d="M8 21h8"></path>
+                  <path d="M12 17v4"></path>
+                </svg>
+              </div>
+              <div class="status-info">
+                <span class="status-label">System</span>
+                <span class="status-badge connected">{{ dashboardData.systemStatus?.status }}</span>
+              </div>
+            </div>
+
+            <div class="status-item">
+              <div class="status-icon database">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3"></path>
+                </svg>
+              </div>
+              <div class="status-info">
+                <span class="status-label">Database</span>
+                <span class="status-badge connected">{{ dashboardData.databaseStatus?.status }}</span>
+              </div>
+            </div>
+
+            <div class="status-item">
+              <div class="status-icon backend">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                  <path d="M8 21h8"></path>
+                  <path d="M12 17v4"></path>
+                </svg>
+              </div>
+              <div class="status-info">
+                <span class="status-label">Backend API</span>
+                <span class="status-badge connected">{{ dashboardData.backendStatus?.status }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card coming-soon-card" style="grid-column: 1 / -1;">
+        <div class="card-header">
+          <h2 class="card-title">Upcoming Features</h2>
+        </div>
+        <div class="card-body">
+          <div class="features-grid grid grid-4">
+            <div class="feature-item">
+              <div class="feature-icon properties">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </div>
+              <h3>Properties</h3>
+              <p>Property Management</p>
+              <span class="status-badge coming-soon">Phase 2</span>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon tenants">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <h3>Tenants</h3>
+              <p>Tenant Management</p>
+              <span class="status-badge coming-soon">Phase 3</span>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon rent">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </div>
+              <h3>Rent</h3>
+              <p>Rent Generation & Tracking</p>
+              <span class="status-badge coming-soon">Later Phase</span>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon payments">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                  <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+              </div>
+              <h3>Payments</h3>
+              <p>Payment Processing</p>
+              <span class="status-badge coming-soon">Later Phase</span>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon reports">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <h3>Reports</h3>
+              <p>Reports & Analytics</p>
+              <span class="status-badge coming-soon">Later Phase</span>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon settings">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </div>
+              <h3>Settings</h3>
+              <p>System Configuration</p>
+              <span class="status-badge coming-soon">Later Phase</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

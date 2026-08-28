@@ -1,0 +1,150 @@
+@if (isOpen()) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Payment Details</h2>
+        <button class="modal-close" (click)="onClose()" type="button" aria-label="Close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        @if (payment(); as p) {
+          <div class="detail-section">
+            <h3>Payment Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Payment ID</span>
+                <span class="detail-value">{{ p.id }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Amount</span>
+                <span class="detail-value amount-highlight">{{ formatCurrency(p.amount) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Payment Date</span>
+                <span class="detail-value">{{ formatDate(p.paymentDate) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Payment Method</span>
+                <span class="detail-value">
+                  <span class="method-badge" [style.background-color]="getMethodColor(p.paymentMethod)">
+                    {{ p.paymentMethod }}
+                  </span>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Reference Number</span>
+                <span class="detail-value">{{ p.referenceNumber || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                  <span class="status-badge" [style.background-color]="getStatusColor(p.status)">
+                    {{ p.status }}
+                  </span>
+                </span>
+              </div>
+              @if (p.notes) {
+                <div class="detail-item">
+                  <span class="detail-label">Notes</span>
+                  <span class="detail-value">{{ p.notes }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Rent Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Rent ID</span>
+                <span class="detail-value">{{ p.rent.id }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Tenant</span>
+                <span class="detail-value">{{ p.rent.tenant.fullName }} ({{ p.rent.tenant.mobileNumber }})</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Property</span>
+                <span class="detail-value">{{ p.rent.property.propertyName }} ({{ p.rent.property.propertyCode }})</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Rent Period</span>
+                <span class="detail-value">{{ getRentPeriodDisplay(p.rent) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Monthly Rent</span>
+                <span class="detail-value">{{ formatCurrency(p.rent.monthlyRent) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Due Date</span>
+                <span class="detail-value">{{ formatDate(p.rent.dueDate) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Rent Status</span>
+                <span class="detail-value">
+                  <span class="status-badge" [style.background-color]="getRentStatusColor(p.rent.status)">
+                    {{ p.rent.status }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Payment Summary</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Total Rent</span>
+                <span class="detail-value">{{ formatCurrency(p.rent.monthlyRent) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Previously Paid</span>
+                <span class="detail-value paid">{{ formatCurrency(p.rent.paidAmount || 0) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">This Payment</span>
+                <span class="detail-value">{{ formatCurrency(p.amount) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Total Paid Now</span>
+                <span class="detail-value paid">{{ formatCurrency((p.rent.paidAmount || 0) + p.amount) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Outstanding Balance</span>
+                <span class="detail-value outstanding">{{ formatCurrency(getOutstanding(p.rent)) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Timestamps</h3>
+            <dl class="detail-list">
+              <div class="detail-item">
+                <dt>Created At</dt>
+                <dd>{{ formatDate(p.createdAt) }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Updated At</dt>
+                <dd>{{ formatDate(p.updatedAt) }}</dd>
+              </div>
+            </dl>
+          </div>
+
+        } @else {
+          <p class="loading">Loading payment details...</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="close.emit()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+}

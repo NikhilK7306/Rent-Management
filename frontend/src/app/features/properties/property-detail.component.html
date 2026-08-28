@@ -1,0 +1,115 @@
+@if (isOpen()) {
+  <div class="modal-overlay" (click)="close.emit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Property Details</h2>
+        <button class="modal-close" (click)="close.emit()" type="button" aria-label="Close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div class="detail-section">
+            <h3 class="section-title">Basic Information</h3>
+            <dl class="detail-list">
+              <div class="detail-item">
+                <dt>Property Code</dt>
+                <dd class="property-code">{{ property().propertyCode }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Property Name</dt>
+                <dd>{{ property().propertyName }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Property Type</dt>
+                <dd>
+                  <span class="type-badge">{{ getPropertyTypeLabel(property().propertyType) }}</span>
+                </dd>
+              </div>
+              <div class="detail-item">
+                <dt>Status</dt>
+                <dd>
+                  <span class="status-badge" [class]="getStatusClass(property().status)">
+                    {{ property().status }}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="detail-section">
+            <h3 class="section-title">Financial</h3>
+            <dl class="detail-list">
+              <div class="detail-item">
+                <dt>Monthly Rent</dt>
+                <dd class="rent-amount">{{ formatCurrency(property().monthlyRent) }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="detail-section">
+            <h3 class="section-title">Address</h3>
+            <dl class="detail-list">
+              <div class="detail-item full-width">
+                <dt>Address</dt>
+                <dd class="address-text">{{ property().address }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          @if (property().description) {
+            <div class="detail-section">
+              <h3 class="section-title">Description</h3>
+              <dl class="detail-list">
+                <div class="detail-item full-width">
+                  <dt>Description</dt>
+                  <dd class="description-text">{{ property().description }}</dd>
+                </div>
+              </dl>
+            </div>
+          }
+
+          <div class="detail-section">
+            <h3 class="section-title">Tenant</h3>
+            <dl class="detail-list">
+              <div class="detail-item">
+                <dt>Current Tenant</dt>
+                <dd>
+                  @if (property().tenant) {
+                    {{ property().tenant!.fullName }} ({{ property().tenant!.mobileNumber }})
+                  } @else {
+                    <span class="not-assigned">Not Assigned</span>
+                  }
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="detail-section">
+            <h3 class="section-title">Timestamps</h3>
+            <dl class="detail-list">
+              <div class="detail-item">
+                <dt>Created At</dt>
+                <dd>{{ formatDate(property().createdAt) }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Updated At</dt>
+                <dd>{{ formatDate(property().updatedAt) }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="close.emit()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+}

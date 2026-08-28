@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rentms-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rentdb}
+      POSTGRES_USER: ${POSTGRES_USER:-rentuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rentpass}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rentuser} -d ${POSTGRES_DB:-rentdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - rentms-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    container_name: rentms-backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-rentdb}
+      DB_USERNAME: ${POSTGRES_USER:-rentuser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-rentpass}
+      JWT_SECRET: dev-secret-key-min-256-bits-for-hmac-sha256-change-in-production
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - rentms-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: docker/Dockerfile
+    container_name: rentms-frontend
+    environment:
+      NG_API_BASE_URL: http://localhost:8080/api
+    ports:
+      - "4200:4200"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - rentms-network
+
+volumes:
+  postgres_data:
+
+networks:
+  rentms-network:
+    driver: bridge

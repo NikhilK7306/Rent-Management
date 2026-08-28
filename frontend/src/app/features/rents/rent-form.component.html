@@ -1,0 +1,359 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ getCurrentModeLabel() }}</h2>
+      <button class="modal-close" (click)="onClose()" type="button" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      @if (errorMessage()) {
+        <div class="alert alert-error">{{ errorMessage() }}</div>
+      }
+
+      <!-- Mode Selector -->
+      @if (showModeSelector()) {
+        <div class="mode-selector">
+          <button
+            type="button"
+            class="mode-btn"
+            [class.active]="mode() === 'single'"
+            (click)="setMode('single')">
+            <span class="mode-icon">📅</span>
+            <span>Single Month</span>
+          </button>
+          <button
+            type="button"
+            class="mode-btn"
+            [class.active]="mode() === 'historical'"
+            (click)="setMode('historical')">
+            <span class="mode-icon">📊</span>
+            <span>Historical / Arrears</span>
+          </button>
+          <button
+            type="button"
+            class="mode-btn"
+            [class.active]="mode() === 'total'"
+            (click)="setMode('total')">
+            <span class="mode-icon">💰</span>
+            <span>Total Outstanding</span>
+          </button>
+        </div>
+      }
+
+      <form [formGroup]="getCurrentForm()" (ngSubmit)="onSubmit()">
+        <!-- Single Month Rent Mode -->
+        @if (mode() === 'single') {
+          <div class="form-section">
+            <h3>Single Month Rent</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tenantId">Tenant <span class="required">*</span></label>
+                <select id="tenantId" formControlName="tenantId">
+                  <option value="0">Select Tenant</option>
+                  @for (tenant of tenants(); track tenant.id) {
+                    <option [value]="tenant.id">{{ tenant.fullName }} ({{ tenant.mobileNumber }})</option>
+                  }
+                </select>
+                @if (getError('tenantId')) {
+                  <span class="error-message">{{ getError('tenantId') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="propertyId">Property <span class="required">*</span></label>
+                <select id="propertyId" formControlName="propertyId">
+                  <option value="0">Select Property</option>
+                  @for (prop of properties(); track prop.id) {
+                    <option [value]="prop.id">{{ prop.propertyCode }} — {{ prop.propertyName }} ({{ prop.propertyType }}) — ₹{{ prop.monthlyRent | number:'1.0-0' }}/month</option>
+                  }
+                </select>
+                @if (getError('propertyId')) {
+                  <span class="error-message">{{ getError('propertyId') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="rentMonth">Rent Month <span class="required">*</span></label>
+                <select id="rentMonth" formControlName="rentMonth">
+                  <option value="0">Select Month</option>
+                  @for (month of months; track month) {
+                    <option [value]="month">{{ getMonthName(month) }}</option>
+                  }
+                </select>
+                @if (getError('rentMonth')) {
+                  <span class="error-message">{{ getError('rentMonth') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="rentYear">Rent Year <span class="required">*</span></label>
+                <select id="rentYear" formControlName="rentYear">
+                  <option value="0">Select Year</option>
+                  @for (year of years; track year) {
+                    <option [value]="year">{{ year }}</option>
+                  }
+                </select>
+                @if (getError('rentYear')) {
+                  <span class="error-message">{{ getError('rentYear') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="monthlyRent">Monthly Rent <span class="required">*</span></label>
+                <input id="monthlyRent" type="number" formControlName="monthlyRent" placeholder="Enter monthly rent" step="0.01" min="0.01" />
+                @if (getError('monthlyRent')) {
+                  <span class="error-message">{{ getError('monthlyRent') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="dueDate">Due Date <span class="required">*</span></label>
+                <input id="dueDate" type="date" formControlName="dueDate" />
+                @if (getError('dueDate')) {
+                  <span class="error-message">{{ getError('dueDate') }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Historical / Arrears Rent Mode -->
+        @if (mode() === 'historical') {
+          <div class="form-section">
+            <h3>Historical / Arrears Rent</h3>
+            <p class="section-description">Create rent records for a date range. Existing months will be skipped.</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tenantId">Tenant <span class="required">*</span></label>
+                <select id="tenantId" formControlName="tenantId">
+                  <option value="0">Select Tenant</option>
+                  @for (tenant of tenants(); track tenant.id) {
+                    <option [value]="tenant.id">{{ tenant.fullName }} ({{ tenant.mobileNumber }})</option>
+                  }
+                </select>
+                @if (getError('tenantId')) {
+                  <span class="error-message">{{ getError('tenantId') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="propertyId">Property <span class="required">*</span></label>
+                <select id="propertyId" formControlName="propertyId">
+                  <option value="0">Select Property</option>
+                  @for (prop of properties(); track prop.id) {
+                    <option [value]="prop.id">{{ prop.propertyCode }} — {{ prop.propertyName }} ({{ prop.propertyType }}) — ₹{{ prop.monthlyRent | number:'1.0-0' }}/month</option>
+                  }
+                </select>
+                @if (getError('propertyId')) {
+                  <span class="error-message">{{ getError('propertyId') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="startMonth">Start Month <span class="required">*</span></label>
+                <select id="startMonth" formControlName="startMonth">
+                  <option value="0">Select Month</option>
+                  @for (month of months; track month) {
+                    <option [value]="month">{{ getMonthName(month) }}</option>
+                  }
+                </select>
+                @if (getError('startMonth')) {
+                  <span class="error-message">{{ getError('startMonth') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="startYear">Start Year <span class="required">*</span></label>
+                <select id="startYear" formControlName="startYear">
+                  <option value="0">Select Year</option>
+                  @for (year of years; track year) {
+                    <option [value]="year">{{ year }}</option>
+                  }
+                </select>
+                @if (getError('startYear')) {
+                  <span class="error-message">{{ getError('startYear') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="endMonth">End Month <span class="required">*</span></label>
+                <select id="endMonth" formControlName="endMonth">
+                  <option value="0">Select Month</option>
+                  @for (month of months; track month) {
+                    <option [value]="month">{{ getMonthName(month) }}</option>
+                  }
+                </select>
+                @if (getError('endMonth')) {
+                  <span class="error-message">{{ getError('endMonth') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="endYear">End Year <span class="required">*</span></label>
+                <select id="endYear" formControlName="endYear">
+                  <option value="0">Select Year</option>
+                  @for (year of years; track year) {
+                    <option [value]="year">{{ year }}</option>
+                  }
+                </select>
+                @if (getError('endYear')) {
+                  <span class="error-message">{{ getError('endYear') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="monthlyRent">Monthly Rent <span class="required">*</span></label>
+                <input id="monthlyRent" type="number" formControlName="monthlyRent" placeholder="Enter monthly rent" step="0.01" min="0.01" />
+                @if (getError('monthlyRent')) {
+                  <span class="error-message">{{ getError('monthlyRent') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="initialStatus">Initial Status</label>
+                <select id="initialStatus" formControlName="initialStatus">
+                  @for (status of rentStatuses; track status.value) {
+                    <option [value]="status.value">{{ status.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dueDate">Due Date Rule</label>
+                <input id="dueDate" type="date" formControlName="dueDate" placeholder="Optional: defaults to 1st of each month" />
+              </div>
+            </div>
+
+            <!-- Live Summary -->
+            @if (totalMonths() > 0) {
+              <div class="summary-panel">
+                <h4>Summary</h4>
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <span class="label">Period</span>
+                    <span class="value">{{ getMonthName(historicalForm.get('startMonth')?.value || 0) }} {{ historicalForm.get('startYear')?.value }} – {{ getMonthName(historicalForm.get('endMonth')?.value || 0) }} {{ historicalForm.get('endYear')?.value }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Total Months</span>
+                    <span class="value">{{ totalMonths() }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Monthly Rent</span>
+                    <span class="value">{{ formatCurrency(historicalForm.get('monthlyRent')?.value || 0) }}</span>
+                  </div>
+                  <div class="summary-item highlight">
+                    <span class="label">Total Amount</span>
+                    <span class="value">{{ formatCurrency(totalAmount()) }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Total Outstanding Amount Mode -->
+        @if (mode() === 'total') {
+          <div class="form-section">
+            <h3>Total Outstanding Amount</h3>
+            <p class="section-description">Enter the total outstanding amount. Optionally distribute across months.</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tenantId">Tenant <span class="required">*</span></label>
+                <select id="tenantId" formControlName="tenantId">
+                  <option value="0">Select Tenant</option>
+                  @for (tenant of tenants(); track tenant.id) {
+                    <option [value]="tenant.id">{{ tenant.fullName }} ({{ tenant.mobileNumber }})</option>
+                  }
+                </select>
+                @if (getError('tenantId')) {
+                  <span class="error-message">{{ getError('tenantId') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="propertyId">Property <span class="required">*</span></label>
+                <select id="propertyId" formControlName="propertyId">
+                  <option value="0">Select Property</option>
+                  @for (prop of properties(); track prop.id) {
+                    <option [value]="prop.id">{{ prop.propertyCode }} — {{ prop.propertyName }} ({{ prop.propertyType }}) — ₹{{ prop.monthlyRent | number:'1.0-0' }}/month</option>
+                  }
+                </select>
+                @if (getError('propertyId')) {
+                  <span class="error-message">{{ getError('propertyId') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="asOfDate">As Of Date <span class="required">*</span></label>
+                <input id="asOfDate" type="date" formControlName="asOfDate" />
+                @if (getError('asOfDate')) {
+                  <span class="error-message">{{ getError('asOfDate') }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="totalOutstandingAmount">Total Outstanding Amount <span class="required">*</span></label>
+                <input id="totalOutstandingAmount" type="number" formControlName="totalOutstandingAmount" placeholder="Enter total outstanding" step="0.01" min="0.01" />
+                @if (getError('totalOutstandingAmount')) {
+                  <span class="error-message">{{ getError('totalOutstandingAmount') }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="numberOfMonths">Number of Months (Optional)</label>
+                <input id="numberOfMonths" type="number" formControlName="numberOfMonths" placeholder="Leave blank for consolidated record" min="1" />
+                @if (getError('numberOfMonths')) {
+                  <span class="error-message">{{ getError('numberOfMonths') }}</span>
+                }
+                @if ((totalForm.get('numberOfMonths')?.value ?? 0) > 0) {
+                  <div class="field-hint">
+                    Monthly: {{ formatCurrency(monthlyAmount()) }} × {{ (totalForm.get('numberOfMonths')?.value || 1) - 1 }} months + {{ formatCurrency(lastMonthAmount()) }} (last month)
+                  </div>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" formControlName="notes" rows="3" placeholder="Additional notes..."></textarea>
+              </div>
+            </div>
+          </div>
+        }
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="onClose()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || getCurrentForm().invalid" form="rent-form">
+        @if (isSubmitting()) {
+          <span class="spinner"></span> Saving...
+        } @else {
+          {{ mode() === 'single' ? 'Create' : mode() === 'historical' ? 'Create Historical Rents' : 'Create Outstanding Record' }}
+        }
+      </button>
+    </div>
+  </div>
+</div>

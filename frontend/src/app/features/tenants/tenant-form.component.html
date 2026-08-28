@@ -1,0 +1,59 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ tenant() ? 'Edit Tenant' : 'Add Tenant' }}</h2>
+      <button class="modal-close" (click)="onClose()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      @if (errorMessage()) {
+        <div class="alert alert-error">{{ errorMessage() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="fullName">Full Name <span class="required">*</span></label>
+          <input id="fullName" type="text" formControlName="fullName" placeholder="Enter full name" />
+          @if (getError('fullName')) {
+            <span class="error-message">{{ getError('fullName') }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="mobileNumber">Mobile Number <span class="required">*</span></label>
+          <input id="mobileNumber" type="text" formControlName="mobileNumber" placeholder="Enter mobile number" />
+          @if (getError('mobileNumber')) {
+            <span class="error-message">{{ getError('mobileNumber') }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" formControlName="email" placeholder="Enter email (optional)" />
+          @if (getError('email')) {
+            <span class="error-message">{{ getError('email') }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <textarea id="address" formControlName="address" rows="3" placeholder="Enter address (optional)"></textarea>
+          @if (getError('address')) {
+            <span class="error-message">{{ getError('address') }}</span>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="onClose()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="spinner"></span> Saving...
+            } @else {
+              {{ tenant() ? 'Update' : 'Create' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

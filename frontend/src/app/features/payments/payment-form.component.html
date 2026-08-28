@@ -1,0 +1,127 @@
+@if (isOpen()) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Record Payment</h2>
+        <button class="modal-close" (click)="onClose()" type="button" aria-label="Close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        @if (errorMessage()) {
+          <div class="alert alert-error">{{ errorMessage() }}</div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          @if (selectedRent(); as rent) {
+            <div class="rent-summary">
+              <h3>Rent Details</h3>
+              <div class="summary-row">
+                <span class="label">Tenant</span>
+                <span class="value">{{ rent.tenant.fullName }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Property</span>
+                <span class="value">{{ rent.property.propertyName }} ({{ rent.property.propertyCode }})</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Rent Period</span>
+                <span class="value">{{ getMonthName(rent.rentMonth) }} {{ rent.rentYear }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Rent Amount</span>
+                <span class="value">{{ formatCurrency(rent.monthlyRent) }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Already Paid</span>
+                <span class="value paid">{{ formatCurrency(rent.paidAmount || 0) }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Outstanding Balance</span>
+                <span class="value outstanding">{{ formatCurrency(outstandingAmount()) }}</span>
+              </div>
+            </div>
+          }
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rentSelect">Select Rent <span class="required">*</span></label>
+              <select id="rentSelect" formControlName="rentId">
+                <option value="0">Select Rent</option>
+                @for (rent of availableRents(); track rent.id) {
+                  <option [value]="rent.id">
+                    {{ rent.tenant.fullName }} - {{ rent.property.propertyName }} ({{ getMonthName(rent.rentMonth) }} {{ rent.rentYear }}) - Outstanding: {{ formatCurrency(rent.monthlyRent - (rent.paidAmount || 0)) }}
+                  </option>
+                }
+              </select>
+              @if (form.get('rentId')?.invalid && (form.get('rentId')?.dirty || form.get('rentId')?.touched)) {
+                <span class="field-error">Please select a rent</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="paymentDate">Payment Date <span class="required">*</span></label>
+              <input type="date" id="paymentDate" formControlName="paymentDate" [max]="getTodayString()" />
+              @if (form.get('paymentDate')?.invalid && (form.get('paymentDate')?.dirty || form.get('paymentDate')?.touched)) {
+                <span class="field-error">Payment date is required</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="paymentMethod">Payment Method <span class="required">*</span></label>
+              <select id="paymentMethod" formControlName="paymentMethod">
+                @for (method of paymentMethods; track method.value) {
+                  <option [value]="method.value">{{ method.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="amount">Amount <span class="required">*</span></label>
+              <input type="number" id="amount" formControlName="amount" step="0.01" min="0.01" placeholder="Enter amount" />
+              @if (form.get('amount')?.invalid && (form.get('amount')?.dirty || form.get('amount')?.touched)) {
+                <span class="field-error">Amount must be greater than zero</span>
+              }
+              @if (amountExceedsOutstanding()) {
+                <span class="field-error">Amount cannot exceed outstanding balance ({{ formatCurrency(outstandingAmount()) }})</span>
+              }
+              @if (selectedRent(); as rent) {
+                <div class="field-hint">Outstanding: {{ formatCurrency(outstandingAmount()) }}</div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="referenceNumber">Reference Number</label>
+              <input type="text" id="referenceNumber" formControlName="referenceNumber" placeholder="Transaction ID, cheque number, etc." maxlength="100" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea id="notes" formControlName="notes" rows="3" placeholder="Any additional notes..."></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="onClose()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || form.invalid || amountExceedsOutstanding()">
+              @if (isSubmitting()) {
+                <span class="spinner"></span>
+                <span>Recording...</span>
+              } @else {
+                <span>Record Payment</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

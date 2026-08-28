@@ -1,0 +1,119 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rentms
+      comment: Create properties table
+      changes:
+        - createTable:
+            tableName: properties
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: property_name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: property_code
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: property_type
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: address
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: monthly_rent
+                  type: NUMERIC(12,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2
+      author: rentms
+      comment: Create index on property_code for unique lookups
+      changes:
+        - createIndex:
+            tableName: properties
+            indexName: idx_properties_property_code
+            columns:
+              - column:
+                  name: property_code
+            unique: true
+
+  - changeSet:
+      id: 3
+      author: rentms
+      comment: Create index on property_name for search
+      changes:
+        - createIndex:
+            tableName: properties
+            indexName: idx_properties_property_name
+            columns:
+              - column:
+                  name: property_name
+
+  - changeSet:
+      id: 4
+      author: rentms
+      comment: Create index on status for filtering
+      changes:
+        - createIndex:
+            tableName: properties
+            indexName: idx_properties_status
+            columns:
+              - column:
+                  name: status
+
+  - changeSet:
+      id: 5
+      author: rentms
+      comment: Create index on property_type for filtering
+      changes:
+        - createIndex:
+            tableName: properties
+            indexName: idx_properties_property_type
+            columns:
+              - column:
+                  name: property_type
+
+  - changeSet:
+      id: 6
+      author: rentms
+      comment: Add check constraint for monthly_rent > 0
+      changes:
+        - sql:
+            sql: ALTER TABLE properties ADD CONSTRAINT chk_properties_monthly_rent_positive CHECK (monthly_rent > 0)
