@@ -35,10 +35,10 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
 
         if (search != null && !search.trim().isEmpty()) {
             whereClause.append(" AND (")
-                    .append("LOWER(r.tenant.full_name) LIKE LOWER(CONCAT('%', ?, '%')) ")
-                    .append("OR LOWER(r.tenant.mobile_number) LIKE LOWER(CONCAT('%', ?, '%')) ")
-                    .append("OR LOWER(r.property.property_code) LIKE LOWER(CONCAT('%', ?, '%')) ")
-                    .append("OR LOWER(r.property.property_name) LIKE LOWER(CONCAT('%', ?, '%')) ")
+                    .append("LOWER(t.full_name) LIKE LOWER(CONCAT('%', ?, '%')) ")
+                    .append("OR LOWER(t.mobile_number) LIKE LOWER(CONCAT('%', ?, '%')) ")
+                    .append("OR LOWER(pr.property_code) LIKE LOWER(CONCAT('%', ?, '%')) ")
+                    .append("OR LOWER(pr.property_name) LIKE LOWER(CONCAT('%', ?, '%')) ")
                     .append("OR CAST(p.reference_number AS TEXT) LIKE LOWER(CONCAT('%', ?, '%'))")
                     .append(")");
             for (int i = 0; i < 5; i++) {

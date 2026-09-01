@@ -4,7 +4,9 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Rent, RentStatus } from '@features/rents/rent.model';
 import { Property } from '@core/models/property.model';
 import { TenantPropertyRequest } from '@core/models/tenant.model';
+import { Payment, PaymentPage } from '@core/models/payment.model';
 import { TenantService } from '@core/services/tenant.service';
+import { PaymentService } from '@core/services/payment.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
@@ -22,16 +24,19 @@ export class RentDetailComponent {
 
   private fb = inject(FormBuilder);
   private tenantService = inject(TenantService);
+  private paymentService = inject(PaymentService);
 
   isAssigning = signal(false);
   isChanging = signal(false);
   isUnassigning = signal(false);
   isUpdatingStatus = signal(false);
+  isLoadingPayments = signal(false);
   errorMessage = signal('');
   showAssignModal = signal(false);
   showChangeModal = signal(false);
   showUnassignConfirm = signal(false);
   showStatusConfirm = signal(false);
+  paymentHistory = signal<Payment[]>([]);
 
   assignForm = this.fb.nonNullable.group({
     propertyId: [0, Validators.required]
@@ -60,6 +65,26 @@ export class RentDetailComponent {
     const currentPropId = this.rent()?.property?.id;
     return this.assignableProperties().filter(p => p.id !== currentPropId).length > 0;
   });
+
+  ngOnInit(): void {
+    this.loadPaymentHistory();
+  }
+
+  loadPaymentHistory(): void {
+    const rent = this.rent();
+    if (!rent) return;
+
+    this.isLoadingPayments.set(true);
+    this.paymentService.getPaymentsByRent(rent.id, 0, 100).subscribe({
+      next: (response: PaymentPage) => {
+        this.paymentHistory.set(response.content);
+        this.isLoadingPayments.set(false);
+      },
+      error: () => {
+        this.isLoadingPayments.set(false);
+      }
+    });
+  }
 
   openAssignModal(): void {
     if (!this.canAssignProperty()) return;
@@ -242,5 +267,43 @@ export class RentDetailComponent {
 
   isPropertyAssigned(property: any): boolean {
     return property !== null;
+  }
+
+  getRentStatusColor(status: string): string {
+    const colorMap: Record<string, string> = {
+      PENDING: '#f59e0b',
+      PARTIAL: '#3b82f6',
+      PAID: '#10b981',
+      OVERDUE: '#ef4444'
+    };
+    return colorMap[status] || '#6b7280';
+  }
+
+  getPaymentMethodColor(method: string): string {
+    const colorMap: Record<string, string> = {
+      CASH: '#6b7280',
+      UPI: '#3b82f6',
+      CARD: '#8b5cf6',
+      BANK_TRANSFER: '#06b6d4',
+      CHEQUE: '#f59e0b',
+      OTHER: '#64748b'
+    };
+    return colorMap[method] || '#6b7280';
+  }
+
+  getPaymentStatusColor(status: string): string {
+    const colorMap: Record<string, string> = {
+      PENDING: '#f59e0b',
+      PARTIAL: '#3b82f6',
+      PAID: '#10b981',
+      OVERDUE: '#ef4444',
+      CANCELLED: '#6b7280'
+    };
+    return colorMap[status] || '#6b7280';
+  }
+
+  getOutstanding(rent: any): number {
+    const paid = rent.paidAmount || 0;
+    return rent.monthlyRent - paid;
   }
 }

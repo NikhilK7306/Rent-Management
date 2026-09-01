@@ -149,7 +149,7 @@ public class PaymentService {
 
         Rent rent = payment.getRent();
         BigDecimal totalPaid = getTotalPaidForRent(rent.getId());
-        BigDecimal outstanding = rent.getMonthlyRent().subtract(totalPaid.add(payment.getAmount()));
+        BigDecimal outstanding = rent.getMonthlyRent().subtract(totalPaid.subtract(payment.getAmount()));
 
         // Validate payment amount
         if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {

@@ -88,6 +88,7 @@
               </td>
               <td class="actions">
                 <button class="btn btn-sm btn-outline" (click)="openDetailModal(payment)">View</button>
+                <button class="btn btn-sm btn-outline" (click)="openEditModal(payment)">Edit</button>
               </td>
             </tr>
           }
@@ -106,6 +107,17 @@
 
   @if (showAddModal()) {
     <app-payment-form [isOpen]="showAddModal()" [availableRents]="availableRents()" (close)="closeAddModal()" (saved)="onPaymentCreated()"></app-payment-form>
+  }
+
+  @if (showEditModal() && paymentToEdit()) {
+    <app-payment-form 
+      [isOpen]="showEditModal()" 
+      [availableRents]="availableRents()" 
+      [paymentToEdit]="paymentToEdit()" 
+      [paymentId]="paymentEditId()"
+      (close)="closeEditModal()" 
+      (saved)="onPaymentUpdated()">
+    </app-payment-form>
   }
 
   @if (showDetailModal()) {

@@ -81,7 +81,7 @@
               <div class="detail-item">
                 <dt>Status</dt>
                 <dd>
-                  <span class="status-badge" [ngClass]="getStatusClass(r.status)">
+                  <span class="status-badge" [ngClass]="getStatusClass(r.status)" [style.background-color]="getRentStatusColor(r.status)">
                     {{ r.status }}
                   </span>
                 </dd>
@@ -98,7 +98,59 @@
                   <dd class="rent-amount">{{ formatCurrency(r.paidAmount) }}</dd>
                 </div>
               }
+              <div class="detail-item">
+                <dt>Outstanding Balance</dt>
+                <dd class="outstanding">{{ formatCurrency(getOutstanding(r)) }}</dd>
+              </div>
             </dl>
+          </div>
+
+          <div class="detail-section">
+            <h3>Payment History</h3>
+            @if (isLoadingPayments()) {
+              <div class="loading">Loading payment history...</div>
+            } @else if (paymentHistory().length === 0) {
+              <div class="empty-state">
+                <p>No payments recorded for this rent yet.</p>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Payment ID</th>
+                      <th>Payment Date</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Reference</th>
+                      <th>Status</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (payment of paymentHistory(); track payment.id) {
+                      <tr>
+                        <td>{{ payment.id }}</td>
+                        <td>{{ formatDate(payment.paymentDate) }}</td>
+                        <td class="amount-paid">{{ formatCurrency(payment.amount) }}</td>
+                        <td>
+                          <span class="method-badge" [style.background-color]="getPaymentMethodColor(payment.paymentMethod)">
+                            {{ payment.paymentMethod }}
+                          </span>
+                        </td>
+                        <td>{{ payment.referenceNumber || '—' }}</td>
+                        <td>
+                          <span class="status-badge" [style.background-color]="getPaymentStatusColor(payment.status)">
+                            {{ payment.status }}
+                          </span>
+                        </td>
+                        <td>{{ payment.notes || '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
           </div>
 
           <div class="detail-section">

@@ -10,12 +10,13 @@ import { Property, PropertyPage } from '@core/models/property.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RentFormComponent } from './rent-form.component';
 import { RentDetailComponent } from './rent-detail.component';
+import { PaymentFormComponent } from '../payments/payment-form.component';
 import { ToastService } from '@core/services/notification/toast.service';
 
 @Component({
   selector: 'app-rent-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, RentFormComponent, RentDetailComponent],
+  imports: [CommonModule, FormsModule, RouterModule, RentFormComponent, RentDetailComponent, PaymentFormComponent],
   templateUrl: './rent-list.component.html',
   styleUrl: './rent-list.component.scss'
 })
@@ -38,7 +39,9 @@ export class RentListComponent implements OnInit {
 
   showAddModal = signal(false);
   showDetailModal = signal(false);
+  showRecordPaymentModal = signal(false);
   selectedRent = signal<any | null>(null);
+  selectedRentForPayment = signal<any | null>(null);
 
   statuses = RENT_STATUSES;
   months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -149,6 +152,16 @@ export class RentListComponent implements OnInit {
     this.selectedRent.set(null);
   }
 
+  openRecordPaymentModal(rent: any): void {
+    this.selectedRentForPayment.set(rent);
+    this.showRecordPaymentModal.set(true);
+  }
+
+  closeRecordPaymentModal(): void {
+    this.showRecordPaymentModal.set(false);
+    this.selectedRentForPayment.set(null);
+  }
+
   onRentCreated(): void {
     this.closeAddModal();
     this.loadRents();
@@ -156,6 +169,11 @@ export class RentListComponent implements OnInit {
 
   onRentUpdated(): void {
     this.closeDetailModal();
+    this.loadRents();
+  }
+
+  onPaymentRecorded(): void {
+    this.closeRecordPaymentModal();
     this.loadRents();
   }
 
@@ -216,5 +234,9 @@ export class RentListComponent implements OnInit {
 
   getPaid(rent: any): number {
     return rent.paidAmount || 0;
+  }
+
+  canRecordPayment(rent: any): boolean {
+    return rent.status !== 'PAID';
   }
 }

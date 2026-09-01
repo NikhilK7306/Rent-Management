@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { PaymentService } from '@core/services/payment.service';
 import { RentService } from '@core/services/rent.service';
 import { Payment, PaymentPage, PaymentStatus, PaymentMethod, PAYMENT_STATUSES, PAYMENT_METHODS, PAYMENT_STATUS_COLORS, PAYMENT_METHOD_COLORS } from '@core/models/payment.model';
+import { PaymentRequest } from '@core/models/payment.model';
 import { Rent, RentPage } from '@features/rents/rent.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PaymentFormComponent } from './payment-form.component';
@@ -39,13 +40,32 @@ export class PaymentListComponent implements OnInit {
 
   showAddModal = signal(false);
   showDetailModal = signal(false);
+  showEditModal = signal(false);
   selectedPayment = signal<Payment | null>(null);
+  selectedPaymentForEdit = signal<Payment | null>(null);
 
   availableRents = signal<Rent[]>([]);
   rentsLoading = signal(false);
 
   statuses = PAYMENT_STATUSES;
   paymentMethods = PAYMENT_METHODS;
+
+  // Convert Payment to PaymentRequest for the edit form
+  paymentToEdit = computed<PaymentRequest | null>(() => {
+    const p = this.selectedPaymentForEdit();
+    if (!p) return null;
+    return {
+      rentId: p.rent.id,
+      amount: p.amount,
+      paymentDate: p.paymentDate,
+      paymentMethod: p.paymentMethod,
+      referenceNumber: p.referenceNumber || undefined,
+      notes: p.notes || undefined
+    };
+  });
+
+  // Get the payment ID for editing
+  paymentEditId = computed<number | null>(() => this.selectedPaymentForEdit()?.id ?? null);
 
   filteredPayments = computed(() => this.payments());
 
@@ -149,6 +169,16 @@ export class PaymentListComponent implements OnInit {
     this.showAddModal.set(false);
   }
 
+  openEditModal(payment: Payment): void {
+    this.selectedPaymentForEdit.set(payment);
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.selectedPaymentForEdit.set(null);
+  }
+
   openDetailModal(payment: Payment): void {
     this.selectedPayment.set(payment);
     this.showDetailModal.set(true);
@@ -163,6 +193,12 @@ export class PaymentListComponent implements OnInit {
     this.closeAddModal();
     this.loadPayments();
     this.toastService.success('Payment Recorded', 'Payment has been recorded successfully');
+  }
+
+  onPaymentUpdated(): void {
+    this.closeEditModal();
+    this.loadPayments();
+    this.toastService.success('Payment Updated', 'Payment has been updated successfully');
   }
 
   getStatusColor(status: PaymentStatus): string {

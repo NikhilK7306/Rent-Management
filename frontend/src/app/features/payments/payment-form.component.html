@@ -2,7 +2,7 @@
   <div class="modal-overlay" (click)="onClose()">
     <div class="modal-content form-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Record Payment</h2>
+        <h2>{{ isEditing() ? 'Edit Payment' : 'Record Payment' }}</h2>
         <button class="modal-close" (click)="onClose()" type="button" aria-label="Close">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -50,7 +50,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="rentSelect">Select Rent <span class="required">*</span></label>
-              <select id="rentSelect" formControlName="rentId">
+              <select id="rentSelect" formControlName="rentId" [disabled]="isEditing()">
                 <option value="0">Select Rent</option>
                 @for (rent of availableRents(); track rent.id) {
                   <option [value]="rent.id">
@@ -60,6 +60,9 @@
               </select>
               @if (form.get('rentId')?.invalid && (form.get('rentId')?.dirty || form.get('rentId')?.touched)) {
                 <span class="field-error">Please select a rent</span>
+              }
+              @if (isEditing()) {
+                <div class="field-hint">Rent cannot be changed when editing a payment</div>
               }
             </div>
           </div>
@@ -114,9 +117,9 @@
             <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || form.invalid || amountExceedsOutstanding()">
               @if (isSubmitting()) {
                 <span class="spinner"></span>
-                <span>Recording...</span>
+                <span>{{ isEditing() ? 'Updating...' : 'Recording...' }}</span>
               } @else {
-                <span>Record Payment</span>
+                <span>{{ isEditing() ? 'Update Payment' : 'Record Payment' }}</span>
               }
             </button>
           </div>
