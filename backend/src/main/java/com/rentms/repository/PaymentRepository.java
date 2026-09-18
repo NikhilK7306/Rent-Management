@@ -26,6 +26,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, Payment
 
     Page<Payment> findByStatus(Payment.Status status, Pageable pageable);
 
+    @Query("SELECT COUNT(p) FROM Payment p WHERE p.status = :status")
+    long countByStatus(@Param("status") Payment.Status status);
+
     List<Payment> findByPaymentMethod(Payment.PaymentMethod paymentMethod);
 
     Page<Payment> findByPaymentMethod(Payment.PaymentMethod paymentMethod, Pageable pageable);

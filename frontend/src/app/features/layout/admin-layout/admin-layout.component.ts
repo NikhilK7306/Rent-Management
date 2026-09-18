@@ -26,7 +26,7 @@ export class AdminLayoutComponent implements OnInit {
     { path: '/tenants', label: 'Tenants', icon: 'tenants', disabled: false },
     { path: '/rents', label: 'Rent', icon: 'rent', disabled: false },
     { path: '/payments', label: 'Payments', icon: 'payments', disabled: false },
-    { path: '/reports', label: 'Reports', icon: 'reports', disabled: true, comingSoon: true },
+    { path: '/reports', label: 'Reports', icon: 'reports', disabled: false },
     { path: '/settings', label: 'Settings', icon: 'settings', disabled: true, comingSoon: true }
   ];
 

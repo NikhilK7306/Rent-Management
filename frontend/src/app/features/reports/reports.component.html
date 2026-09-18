@@ -1,0 +1,1012 @@
+<div class="reports-page">
+  <header class="page-header">
+    <h1 class="page-title">Reports & Analytics</h1>
+    <p class="page-subtitle">View and analyze rent, payment, and outstanding reports</p>
+  </header>
+
+  @if (isLoading() && !hasCurrentReportData()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading report...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="alert alert-error" role="alert">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage() }}</span>
+      <button class="btn btn-outline btn-sm" (click)="retryCurrentTab()" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Retry
+      </button>
+    </div>
+  } @else {
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button class="tab-btn" [class.active]="activeTab() === 'rents'" (click)="setTab('rents')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        Rent Report
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'payments'" (click)="setTab('payments')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+        Payment Report
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'outstanding'" (click)="setTab('outstanding')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        Outstanding
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'tenant'" (click)="setTab('tenant')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+        </svg>
+        Tenant Report
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'property'" (click)="setTab('property')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        Property Report
+      </button>
+    </div>
+
+    <!-- Rent Report Tab -->
+    @if (activeTab() === 'rents') {
+      <div class="report-section">
+        <!-- Filters -->
+        <div class="card filter-card">
+          <div class="card-header">
+            <h2 class="card-title">Filters</h2>
+          </div>
+          <div class="card-body">
+            <div class="filter-grid">
+              <div class="filter-group">
+                <label class="filter-label">Month</label>
+                <select class="filter-select" [(ngModel)]="rentFilters().month" (ngModelChange)="onRentFiltersChange()">
+                  <option [ngValue]="null">All Months</option>
+                  @for (m of months; track m.value) {
+                    <option [ngValue]="m.value">{{ m.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Year</label>
+                <select class="filter-select" [(ngModel)]="rentFilters().year" (ngModelChange)="onRentFiltersChange()">
+                  <option [ngValue]="null">All Years</option>
+                  @for (y of years; track y) {
+                    <option [ngValue]="y">{{ y }}</option>
+                  }
+                </select>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">From Date</label>
+                <input type="date" class="filter-input" [(ngModel)]="rentFilters().fromDate" (ngModelChange)="onRentFiltersChange()" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">To Date</label>
+                <input type="date" class="filter-input" [(ngModel)]="rentFilters().toDate" (ngModelChange)="onRentFiltersChange()" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Tenant ID</label>
+                <input type="number" class="filter-input" [(ngModel)]="rentFilters().tenantId" (ngModelChange)="onRentFiltersChange()" placeholder="Optional" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Property ID</label>
+                <input type="number" class="filter-input" [(ngModel)]="rentFilters().propertyId" (ngModelChange)="onRentFiltersChange()" placeholder="Optional" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select class="filter-select" [(ngModel)]="rentFilters().status" (ngModelChange)="onRentFiltersChange()">
+                  <option [ngValue]="null">All Statuses</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="PARTIAL">Partially Paid</option>
+                  <option value="PAID">Paid</option>
+                  <option value="OVERDUE">Overdue</option>
+                </select>
+              </div>
+              <div class="filter-group filter-actions">
+                <button class="btn btn-primary" (click)="loadRentReport()" [disabled]="isLoading()" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  Apply
+                </button>
+                <button class="btn btn-outline" (click)="clearFilters()" type="button">Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        @if (rentReport(); as report) {
+          <div class="summary-grid grid grid-4">
+            <div class="card summary-card">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon rent">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="1" x2="12" y2="23"></line>
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value">{{ formatCurrency(report.totalRent) }}</span>
+                    <span class="summary-label">Total Rent</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card highlight">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon collected">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                      <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value collected">{{ formatCurrency(report.totalPaid) }}</span>
+                    <span class="summary-label">Collected</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card warning">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon outstanding">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value outstanding">{{ formatCurrency(report.totalOutstanding) }}</span>
+                    <span class="summary-label">Outstanding</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon status">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value">{{ report.totalRecords }}</span>
+                    <span class="summary-label">Total Records</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rent Status Summary -->
+          @if (rentStatusReport(); as statusReport) {
+            <div class="card status-summary-card">
+              <div class="card-header">
+                <h2 class="card-title">Rent Status Breakdown</h2>
+              </div>
+              <div class="card-body">
+                <div class="status-breakdown-grid grid grid-3">
+                  <div class="status-breakdown-item paid">
+                    <div class="status-breakdown-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                    </div>
+                    <div class="status-breakdown-info">
+                      <span class="status-breakdown-label">Paid</span>
+                      <span class="status-breakdown-count">{{ statusReport.paidCount }}</span>
+                      <span class="status-breakdown-amount">{{ formatCurrency(statusReport.paidAmount) }}</span>
+                    </div>
+                  </div>
+                  <div class="status-breakdown-item partial">
+                    <div class="status-breakdown-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                    </div>
+                    <div class="status-breakdown-info">
+                      <span class="status-breakdown-label">Partially Paid</span>
+                      <span class="status-breakdown-count">{{ statusReport.partialCount }}</span>
+                      <span class="status-breakdown-amount">{{ formatCurrency(statusReport.partialAmount) }}</span>
+                    </div>
+                  </div>
+                  <div class="status-breakdown-item pending">
+                    <div class="status-breakdown-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                    </div>
+                    <div class="status-breakdown-info">
+                      <span class="status-breakdown-label">Pending</span>
+                      <span class="status-breakdown-count">{{ statusReport.pendingCount }}</span>
+                      <span class="status-breakdown-amount">{{ formatCurrency(statusReport.pendingAmount) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Rent Report Table -->
+          <div class="card report-table-card">
+            <div class="card-header">
+              <h2 class="card-title">Rent Records</h2>
+              <span class="record-count">{{ report.totalRecords }} records</span>
+            </div>
+            <div class="card-body">
+              @if (report.items.length === 0) {
+                <div class="empty-state">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                  <p>No rent records found for the selected filters.</p>
+                </div>
+              } @else {
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Tenant</th>
+                        <th>Property</th>
+                        <th>Period</th>
+                        <th>Rent Amount</th>
+                        <th>Paid</th>
+                        <th>Outstanding</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of report.items; track item.rentId) {
+                        <tr>
+                          <td>
+                            <div class="tenant-info">
+                              <span class="tenant-name">{{ item.tenantName }}</span>
+                              <span class="tenant-mobile">{{ item.tenantMobile }}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="property-info">
+                              <span class="property-name">{{ item.propertyName }}</span>
+                              <span class="property-code">{{ item.propertyCode }}</span>
+                            </div>
+                          </td>
+                          <td>{{ item.period }}</td>
+                          <td>{{ formatCurrency(item.rentAmount) }}</td>
+                          <td class="collected">{{ formatCurrency(item.paidAmount) }}</td>
+                          <td class="outstanding">{{ formatCurrency(item.outstandingAmount) }}</td>
+                          <td><span class="status-badge" [class]="getStatusBadgeClass(item.status)">{{ item.status }}</span></td>
+                          <td>{{ formatDate(item.dueDate) }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (getTotalPages(report.totalRecords, rentFilters().size ?? 20) > 1) {
+                  <div class="pagination">
+                    <button class="btn btn-outline btn-sm" (click)="onRentPageChange((rentFilters().page ?? 0) - 1)" [disabled]="(rentFilters().page ?? 0) === 0" type="button">Previous</button>
+                    <span class="page-info">
+                      Page {{ (rentFilters().page ?? 0) + 1 }} of {{ getTotalPages(report.totalRecords, rentFilters().size ?? 20) }}
+                    </span>
+                    <button class="btn btn-outline btn-sm" (click)="onRentPageChange((rentFilters().page ?? 0) + 1)" [disabled]="(rentFilters().page ?? 0) + 1 >= getTotalPages(report.totalRecords, rentFilters().size ?? 20)" type="button">Next</button>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Payment Report Tab -->
+    @if (activeTab() === 'payments') {
+      <div class="report-section">
+        <div class="card filter-card">
+          <div class="card-header">
+            <h2 class="card-title">Filters</h2>
+          </div>
+          <div class="card-body">
+            <div class="filter-grid">
+              <div class="filter-group">
+                <label class="filter-label">Month</label>
+                <select class="filter-select" [(ngModel)]="paymentFilters().month" (ngModelChange)="onPaymentFiltersChange()">
+                  <option [ngValue]="null">All Months</option>
+                  @for (m of months; track m.value) {
+                    <option [ngValue]="m.value">{{ m.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Year</label>
+                <select class="filter-select" [(ngModel)]="paymentFilters().year" (ngModelChange)="onPaymentFiltersChange()">
+                  <option [ngValue]="null">All Years</option>
+                  @for (y of years; track y) {
+                    <option [ngValue]="y">{{ y }}</option>
+                  }
+                </select>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">From Date</label>
+                <input type="date" class="filter-input" [(ngModel)]="paymentFilters().fromDate" (ngModelChange)="onPaymentFiltersChange()" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">To Date</label>
+                <input type="date" class="filter-input" [(ngModel)]="paymentFilters().toDate" (ngModelChange)="onPaymentFiltersChange()" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Payment Method</label>
+                <select class="filter-select" [(ngModel)]="paymentFilters().paymentMethod" (ngModelChange)="onPaymentFiltersChange()">
+                  <option [ngValue]="null">All Methods</option>
+                  <option value="CASH">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="CARD">Card</option>
+                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="CHEQUE">Cheque</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select class="filter-select" [(ngModel)]="paymentFilters().status" (ngModelChange)="onPaymentFiltersChange()">
+                  <option [ngValue]="null">All Statuses</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="PARTIAL">Partial</option>
+                  <option value="PAID">Paid</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </div>
+              <div class="filter-group filter-actions">
+                <button class="btn btn-primary" (click)="loadPaymentReport()" [disabled]="isLoading()" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  Apply
+                </button>
+                <button class="btn btn-outline" (click)="clearFilters()" type="button">Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (paymentReport(); as paymentReport) {
+          <div class="summary-grid grid grid-4">
+            <div class="card summary-card">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon payments">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                      <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value">{{ paymentReport.totalRecords }}</span>
+                    <span class="summary-label">Total Payments</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card highlight">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon collected">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                      <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value collected">{{ formatCurrency(paymentReport.totalAmount) }}</span>
+                    <span class="summary-label">Total Amount</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon completed">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value">{{ paymentReport.completedCount }}</span>
+                    <span class="summary-label">Completed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon partial">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value partial">{{ paymentReport.partialCount }}</span>
+                    <span class="summary-label">Partial</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          @if (paymentReport.paymentMethodBreakdown && paymentReport.paymentMethodBreakdown.length > 0) {
+            <div class="card payment-method-card">
+              <div class="card-header">
+                <h2 class="card-title">Payment Method Breakdown</h2>
+              </div>
+              <div class="card-body">
+                <div class="method-breakdown-grid grid grid-4">
+                  @for (method of paymentReport.paymentMethodBreakdown; track method.paymentMethod) {
+                    <div class="method-breakdown-item">
+                      <div class="method-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          @if (method.paymentMethod === 'CASH') {
+                            <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                          } @else if (method.paymentMethod === 'UPI') {
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                          } @else if (method.paymentMethod === 'CARD') {
+                            <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                          } @else if (method.paymentMethod === 'BANK_TRANSFER') {
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                          } @else {
+                            <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                          }
+                        </svg>
+                      </div>
+                      <span class="method-name">{{ method.paymentMethod }}</span>
+                      <span class="method-amount">{{ formatCurrency(method.totalAmount) }}</span>
+                      <span class="method-count">({{ method.count }} payments)</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="card report-table-card">
+            <div class="card-header">
+              <h2 class="card-title">Payment Records</h2>
+              <span class="record-count">{{ paymentReport.totalRecords }} records</span>
+            </div>
+            <div class="card-body">
+              @if (paymentReport.items.length === 0) {
+                <div class="empty-state">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                  </svg>
+                  <p>No payment records found for the selected filters.</p>
+                </div>
+              } @else {
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Tenant</th>
+                        <th>Property</th>
+                        <th>Rent Period</th>
+                        <th>Payment Date</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Ref. Number</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of paymentReport.items; track item.paymentId) {
+                        <tr>
+                          <td>
+                            <div class="tenant-info">
+                              <span class="tenant-name">{{ item.tenantName }}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="property-info">
+                              <span class="property-name">{{ item.propertyName }}</span>
+                              <span class="property-code">{{ item.propertyCode }}</span>
+                            </div>
+                          </td>
+                          <td>{{ item.rentPeriod }}</td>
+                          <td>{{ formatDate(item.paymentDate) }}</td>
+                          <td>{{ formatCurrency(item.amount) }}</td>
+                          <td>{{ item.paymentMethod }}</td>
+                          <td><span class="status-badge" [class]="getPaymentStatusBadgeClass(item.status)">{{ item.status }}</span></td>
+                          <td>{{ item.referenceNumber || '-' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+
+                @if (getTotalPages(paymentReport.totalRecords, paymentFilters().size ?? 20) > 1) {
+                  <div class="pagination">
+                    <button class="btn btn-outline btn-sm" (click)="onPaymentPageChange((paymentFilters().page ?? 0) - 1)" [disabled]="(paymentFilters().page ?? 0) === 0" type="button">Previous</button>
+                    <span class="page-info">Page {{ (paymentFilters().page ?? 0) + 1 }} of {{ getTotalPages(paymentReport.totalRecords, paymentFilters().size ?? 20) }}</span>
+                    <button class="btn btn-outline btn-sm" (click)="onPaymentPageChange((paymentFilters().page ?? 0) + 1)" [disabled]="(paymentFilters().page ?? 0) + 1 >= getTotalPages(paymentReport.totalRecords, paymentFilters().size ?? 20)" type="button">Next</button>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Outstanding Report Tab -->
+    @if (activeTab() === 'outstanding') {
+      <div class="report-section">
+        <div class="card filter-card">
+          <div class="card-header">
+            <h2 class="card-title">Filters</h2>
+          </div>
+          <div class="card-body">
+            <div class="filter-grid">
+              <div class="filter-group">
+                <label class="filter-label">Month</label>
+                <select class="filter-select" [(ngModel)]="outstandingFilters().month" (ngModelChange)="onOutstandingFiltersChange()">
+                  <option [ngValue]="null">All Months</option>
+                  @for (m of months; track m.value) {
+                    <option [ngValue]="m.value">{{ m.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Year</label>
+                <select class="filter-select" [(ngModel)]="outstandingFilters().year" (ngModelChange)="onOutstandingFiltersChange()">
+                  <option [ngValue]="null">All Years</option>
+                  @for (y of years; track y) {
+                    <option [ngValue]="y">{{ y }}</option>
+                  }
+                </select>
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">From Date</label>
+                <input type="date" class="filter-input" [(ngModel)]="outstandingFilters().fromDate" (ngModelChange)="onOutstandingFiltersChange()" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">To Date</label>
+                <input type="date" class="filter-input" [(ngModel)]="outstandingFilters().toDate" (ngModelChange)="onOutstandingFiltersChange()" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Tenant ID</label>
+                <input type="number" class="filter-input" [(ngModel)]="outstandingFilters().tenantId" (ngModelChange)="onOutstandingFiltersChange()" placeholder="Optional" />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">Property ID</label>
+                <input type="number" class="filter-input" [(ngModel)]="outstandingFilters().propertyId" (ngModelChange)="onOutstandingFiltersChange()" placeholder="Optional" />
+              </div>
+              <div class="filter-group filter-actions">
+                <button class="btn btn-primary" (click)="loadOutstandingReport()" [disabled]="isLoading()" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  Apply
+                </button>
+                <button class="btn btn-outline" (click)="clearFilters()" type="button">Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (outstandingReport(); as outstandingReport) {
+          <div class="summary-grid grid grid-3">
+            <div class="card summary-card warning">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon outstanding">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value outstanding">{{ formatCurrency(outstandingReport.totalOutstanding) }}</span>
+                    <span class="summary-label">Total Outstanding</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon tenants">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value">{{ outstandingReport.totalTenants }}</span>
+                    <span class="summary-label">Tenants with Outstanding</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card summary-card">
+              <div class="card-body">
+                <div class="summary-item">
+                  <div class="summary-icon status">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-value">{{ outstandingReport.items.length }}</span>
+                    <span class="summary-label">Outstanding Records</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card report-table-card">
+            <div class="card-header">
+              <h2 class="card-title">Outstanding Rents</h2>
+              <span class="record-count">{{ outstandingReport.items.length }} records</span>
+            </div>
+            <div class="card-body">
+              @if (outstandingReport.items.length === 0) {
+                <div class="empty-state">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <p>No outstanding rents found for the selected filters.</p>
+                </div>
+              } @else {
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Tenant</th>
+                        <th>Property</th>
+                        <th>Period</th>
+                        <th>Rent Amount</th>
+                        <th>Paid</th>
+                        <th>Outstanding</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of outstandingReport.items; track item.rentId) {
+                        <tr>
+                          <td>
+                            <div class="tenant-info">
+                              <span class="tenant-name">{{ item.tenantName }}</span>
+                              <span class="tenant-mobile">{{ item.tenantMobile }}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="property-info">
+                              <span class="property-name">{{ item.propertyName }}</span>
+                              <span class="property-code">{{ item.propertyCode }}</span>
+                            </div>
+                          </td>
+                          <td>{{ item.period }}</td>
+                          <td>{{ formatCurrency(item.rentAmount) }}</td>
+                          <td class="collected">{{ formatCurrency(item.totalPaid) }}</td>
+                          <td class="outstanding">{{ formatCurrency(item.outstandingAmount) }}</td>
+                          <td><span class="status-badge" [class]="getStatusBadgeClass(item.status)">{{ item.status }}</span></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+
+                @if (getTotalPages(getOutstandingTotalRecords(), outstandingFilters().size ?? 20) > 1) {
+                  <div class="pagination">
+                    <button class="btn btn-outline btn-sm" (click)="onOutstandingPageChange((outstandingFilters().page ?? 0) - 1)" [disabled]="(outstandingFilters().page ?? 0) === 0" type="button">Previous</button>
+                    <span class="page-info">Page {{ (outstandingFilters().page ?? 0) + 1 }} of {{ getTotalPages(getOutstandingTotalRecords(), outstandingFilters().size ?? 20) }}</span>
+                    <button class="btn btn-outline btn-sm" (click)="onOutstandingPageChange((outstandingFilters().page ?? 0) + 1)" [disabled]="(outstandingFilters().page ?? 0) + 1 >= getTotalPages(getOutstandingTotalRecords(), outstandingFilters().size ?? 20)" type="button">Next</button>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tenant Report Tab -->
+    @if (activeTab() === 'tenant') {
+      <div class="report-section">
+        <div class="card filter-card">
+          <div class="card-header">
+            <h2 class="card-title">Tenant Lookup</h2>
+          </div>
+          <div class="card-body">
+            <div class="filter-grid filter-grid-simple">
+              <div class="filter-group">
+                <label class="filter-label">Tenant ID</label>
+                <input type="number" class="filter-input" [(ngModel)]="selectedTenantId" placeholder="Enter Tenant ID" />
+              </div>
+              <div class="filter-group filter-actions">
+                <button class="btn btn-primary" (click)="loadTenantReport()" [disabled]="isLoading() || !selectedTenantId()" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  Load Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (tenantReport(); as tenantReport) {
+          <div class="card tenant-report-card">
+            <div class="card-header">
+              <h2 class="card-title">{{ tenantReport.tenantName }} - Detailed Report</h2>
+            </div>
+            <div class="card-body">
+              <div class="tenant-summary grid grid-4">
+                <div class="summary-item">
+                  <span class="summary-label">Total Rent Generated</span>
+                  <span class="summary-value">{{ formatCurrency(tenantReport.totalRentGenerated) }}</span>
+                </div>
+                <div class="summary-item highlight">
+                  <span class="summary-label">Total Paid</span>
+                  <span class="summary-value collected">{{ formatCurrency(tenantReport.totalPaid) }}</span>
+                </div>
+                <div class="summary-item warning">
+                  <span class="summary-label">Total Outstanding</span>
+                  <span class="summary-value outstanding">{{ formatCurrency(tenantReport.totalOutstanding) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Property</span>
+                  <span class="summary-value">{{ tenantReport.propertyName }} ({{ tenantReport.propertyCode }})</span>
+                </div>
+              </div>
+
+              <div class="rent-status-summary grid grid-3">
+                <div class="status-item paid">
+                  <span class="status-label">Paid Rents</span>
+                  <span class="status-count">{{ tenantReport.paidRents }}</span>
+                </div>
+                <div class="status-item partial">
+                  <span class="status-label">Partially Paid</span>
+                  <span class="status-count">{{ tenantReport.partialRents }}</span>
+                </div>
+                <div class="status-item pending">
+                  <span class="status-label">Pending Rents</span>
+                  <span class="status-count">{{ tenantReport.pendingRents }}</span>
+                </div>
+              </div>
+
+              <div class="tenant-history">
+                <h3 class="section-title">Rent History</h3>
+                @if (tenantReport.rentHistory.length === 0) {
+                  <div class="empty-state">
+                    <p>No rent history found for this tenant.</p>
+                  </div>
+                } @else {
+                  <div class="table-container">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Period</th>
+                          <th>Rent Amount</th>
+                          <th>Paid</th>
+                          <th>Outstanding</th>
+                          <th>Status</th>
+                          <th>Due Date</th>
+                          <th>Payments</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of tenantReport.rentHistory; track item.rentId) {
+                          <tr>
+                            <td>{{ item.period }}</td>
+                            <td>{{ formatCurrency(item.rentAmount) }}</td>
+                            <td class="collected">{{ formatCurrency(item.paidAmount) }}</td>
+                            <td class="outstanding">{{ formatCurrency(item.outstandingAmount) }}</td>
+                            <td><span class="status-badge" [class]="getStatusBadgeClass(item.status)">{{ item.status }}</span></td>
+                            <td>{{ formatDate(item.dueDate) }}</td>
+                            <td>
+                              <div class="payment-list">
+                                @for (payment of item.payments; track payment.paymentId) {
+                                  <div class="payment-item">
+                                    <span class="payment-date">{{ formatDate(payment.paymentDate) }}</span>
+                                    <span class="payment-amount">{{ formatCurrency(payment.amount) }}</span>
+                                    <span class="payment-method">{{ payment.paymentMethod }}</span>
+                                  </div>
+                                } @empty {
+                                  <span class="no-payments">No payments</span>
+                                }
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Property Report Tab -->
+    @if (activeTab() === 'property') {
+      <div class="report-section">
+        <div class="card filter-card">
+          <div class="card-header">
+            <h2 class="card-title">Property Lookup</h2>
+          </div>
+          <div class="card-body">
+            <div class="filter-grid filter-grid-simple">
+              <div class="filter-group">
+                <label class="filter-label">Property ID</label>
+                <input type="number" class="filter-input" [(ngModel)]="selectedPropertyId" placeholder="Enter Property ID" />
+              </div>
+              <div class="filter-group filter-actions">
+                <button class="btn btn-primary" (click)="loadPropertyReport()" [disabled]="isLoading() || !selectedPropertyId()" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  Load Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (propertyReport(); as propertyReport) {
+          <div class="card property-report-card">
+            <div class="card-header">
+              <h2 class="card-title">{{ propertyReport.propertyName }} ({{ propertyReport.propertyCode }})</h2>
+              <span class="property-type-badge" [class.occupied]="propertyReport.isOccupied" [class.vacant]="!propertyReport.isOccupied">
+                {{ propertyReport.isOccupied ? 'Occupied' : 'Vacant' }}
+              </span>
+            </div>
+            <div class="card-body">
+              <div class="property-info-grid grid grid-3">
+                <div class="info-item">
+                  <span class="info-label">Property Type</span>
+                  <span class="info-value">{{ propertyReport.propertyType }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Monthly Rent</span>
+                  <span class="info-value">{{ formatCurrency(propertyReport.monthlyRent) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Address</span>
+                  <span class="info-value">{{ propertyReport.address }}</span>
+                </div>
+              </div>
+
+              @if (propertyReport.currentTenantName) {
+                <div class="current-tenant-info">
+                  <h4 class="section-title">Current Tenant</h4>
+                  <div class="tenant-details">
+                    <span class="tenant-name">{{ propertyReport.currentTenantName }}</span>
+                    <span class="tenant-mobile">{{ propertyReport.currentTenantMobile }}</span>
+                  </div>
+                </div>
+              }
+
+              <div class="property-summary grid grid-4">
+                <div class="summary-item">
+                  <span class="summary-label">Total Rent Generated</span>
+                  <span class="summary-value">{{ formatCurrency(propertyReport.totalRentGenerated) }}</span>
+                </div>
+                <div class="summary-item highlight">
+                  <span class="summary-label">Total Collected</span>
+                  <span class="summary-value collected">{{ formatCurrency(propertyReport.totalCollected) }}</span>
+                </div>
+                <div class="summary-item warning">
+                  <span class="summary-label">Total Outstanding</span>
+                  <span class="summary-value outstanding">{{ formatCurrency(propertyReport.totalOutstanding) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Records</span>
+                  <span class="summary-value">{{ propertyReport.rentHistory.length }}</span>
+                </div>
+              </div>
+
+              <div class="property-history">
+                <h3 class="section-title">Rent History</h3>
+                @if (propertyReport.rentHistory.length === 0) {
+                  <div class="empty-state">
+                    <p>No rent history found for this property.</p>
+                  </div>
+                } @else {
+                  <div class="table-container">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Tenant</th>
+                          <th>Period</th>
+                          <th>Rent Amount</th>
+                          <th>Paid</th>
+                          <th>Outstanding</th>
+                          <th>Status</th>
+                          <th>Due Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of propertyReport.rentHistory; track item.rentId) {
+                          <tr>
+                            <td>
+                              <div class="tenant-info">
+                                <span class="tenant-name">{{ item.tenantName }}</span>
+                                <span class="tenant-mobile">{{ item.tenantMobile }}</span>
+                              </div>
+                            </td>
+                            <td>{{ item.period }}</td>
+                            <td>{{ formatCurrency(item.rentAmount) }}</td>
+                            <td class="collected">{{ formatCurrency(item.paidAmount) }}</td>
+                            <td class="outstanding">{{ formatCurrency(item.outstandingAmount) }}</td>
+                            <td><span class="status-badge" [class]="getStatusBadgeClass(item.status)">{{ item.status }}</span></td>
+                            <td>{{ formatDate(item.dueDate) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

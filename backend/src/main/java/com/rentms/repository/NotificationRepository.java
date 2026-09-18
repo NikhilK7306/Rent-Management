@@ -1,0 +1,57 @@
+package com.rentms.repository;
+
+import com.rentms.entity.Notification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface NotificationRepository extends JpaRepository<Notification, Long> {
+
+    Optional<Notification> findByReferenceKey(String referenceKey);
+
+    List<Notification> findByIsReadFalseOrderByCreatedAtDesc();
+
+    Page<Notification> findByIsReadFalseOrderByCreatedAtDesc(Pageable pageable);
+
+    List<Notification> findByTenantIdOrderByCreatedAtDesc(Long tenantId);
+
+    Page<Notification> findByTenantIdOrderByCreatedAtDesc(Long tenantId, Pageable pageable);
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.isRead = false")
+    long countUnread();
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.tenant.id = :tenantId AND n.isRead = false")
+    long countUnreadByTenant(@Param("tenantId") Long tenantId);
+
+    List<Notification> findByType(Notification.Type type);
+
+    Page<Notification> findByType(Notification.Type type, Pageable pageable);
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.type = :type AND n.isRead = :isRead")
+    long countByTypeAndIsRead(@Param("type") Notification.Type type, @Param("isRead") boolean isRead);
+
+    List<Notification> findByPriority(Notification.Priority priority);
+
+    Page<Notification> findByPriority(Notification.Priority priority, Pageable pageable);
+
+    List<Notification> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    Page<Notification> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+
+    @Query("UPDATE Notification n SET n.isRead = true WHERE n.id IN :ids")
+    int markAsRead(@Param("ids") List<Long> ids);
+
+    @Query("UPDATE Notification n SET n.isRead = true")
+    int markAllAsRead();
+
+    @Query("SELECT n FROM Notification n WHERE n.referenceKey = :referenceKey")
+    Optional<Notification> findByReferenceKeyNative(@Param("referenceKey") String referenceKey);
+}

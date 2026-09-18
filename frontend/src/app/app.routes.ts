@@ -38,8 +38,7 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        loadComponent: () => import('./features/layout/coming-soon/coming-soon.component').then(m => m.ComingSoonComponent),
-        data: { title: 'Reports', feature: 'Reports & Analytics' }
+        loadComponent: () => import('./features/reports/reports.component').then(m => m.ReportsComponent)
       },
       {
         path: 'settings',

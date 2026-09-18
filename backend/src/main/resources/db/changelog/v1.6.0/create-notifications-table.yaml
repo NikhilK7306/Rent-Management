@@ -1,0 +1,150 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rentms
+      comment: Create notifications table
+      changes:
+        - createTable:
+            tableName: notifications
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_notifications
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: priority
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_read
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tenant_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: property_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: rent_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: payment_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: reference_key
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_tenant_id
+            columns:
+              - column:
+                  name: tenant_id
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_property_id
+            columns:
+              - column:
+                  name: property_id
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_rent_id
+            columns:
+              - column:
+                  name: rent_id
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_payment_id
+            columns:
+              - column:
+                  name: payment_id
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_is_read
+            columns:
+              - column:
+                  name: is_read
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_type
+            columns:
+              - column:
+                  name: type
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_reference_key
+            columns:
+              - column:
+                  name: reference_key
+            unique: true
+        - addForeignKeyConstraint:
+            baseTableName: notifications
+            baseColumnNames: tenant_id
+            referencedTableName: tenants
+            referencedColumnNames: id
+            constraintName: fk_notifications_tenant
+            onDelete: SET NULL
+        - addForeignKeyConstraint:
+            baseTableName: notifications
+            baseColumnNames: property_id
+            referencedTableName: properties
+            referencedColumnNames: id
+            constraintName: fk_notifications_property
+            onDelete: SET NULL
+        - addForeignKeyConstraint:
+            baseTableName: notifications
+            baseColumnNames: rent_id
+            referencedTableName: rents
+            referencedColumnNames: id
+            constraintName: fk_notifications_rent
+            onDelete: SET NULL
+        - addForeignKeyConstraint:
+            baseTableName: notifications
+            baseColumnNames: payment_id
+            referencedTableName: payments
+            referencedColumnNames: id
+            constraintName: fk_notifications_payment
+            onDelete: SET NULL

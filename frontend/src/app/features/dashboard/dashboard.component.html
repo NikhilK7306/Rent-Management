@@ -25,179 +25,376 @@
         Retry
       </button>
     </div>
-  } @else if (dashboardData) {
-    <div class="dashboard-grid grid grid-2">
-      <div class="card welcome-card">
-        <div class="card-header">
-          <h2 class="card-title">Welcome</h2>
-        </div>
+  } @else if (summaryData) {
+    <!-- Summary Cards Grid -->
+    <div class="summary-grid grid grid-4">
+      <div class="card summary-card">
         <div class="card-body">
-          <div class="welcome-content">
-            <div class="welcome-avatar">
-              {{ dashboardData.adminName?.charAt(0) || 'A' }}
-            </div>
-            <div class="welcome-info">
-              <h3>{{ dashboardData.adminName }}</h3>
-              <p class="welcome-role">{{ dashboardData.role }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card stats-card">
-        <div class="card-header">
-          <h2 class="card-title">Property Statistics</h2>
-        </div>
-        <div class="card-body">
-          <div class="stat-item">
-            <div class="stat-icon properties">
+          <div class="summary-item">
+            <div class="summary-icon properties">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
             </div>
-            <div class="stat-info">
-              <span class="stat-value">{{ dashboardData.propertyCount }}</span>
-              <span class="stat-label">Properties</span>
+            <div class="summary-info">
+              <span class="summary-value">{{ summaryData.totalProperties }}</span>
+              <span class="summary-label">Total Properties</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card status-card">
-        <div class="card-header">
-          <h2 class="card-title">System Status</h2>
-        </div>
+      <div class="card summary-card">
         <div class="card-body">
-          <div class="status-grid">
-            <div class="status-item">
-              <div class="status-icon system">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                  <path d="M8 21h8"></path>
-                  <path d="M12 17v4"></path>
-                </svg>
-              </div>
-              <div class="status-info">
-                <span class="status-label">System</span>
-                <span class="status-badge connected">{{ dashboardData.systemStatus?.status }}</span>
-              </div>
+          <div class="summary-item">
+            <div class="summary-icon occupied">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                <path d="M9 12v10"></path>
+              </svg>
             </div>
-
-            <div class="status-item">
-              <div class="status-icon database">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3"></path>
-                </svg>
-              </div>
-              <div class="status-info">
-                <span class="status-label">Database</span>
-                <span class="status-badge connected">{{ dashboardData.databaseStatus?.status }}</span>
-              </div>
-            </div>
-
-            <div class="status-item">
-              <div class="status-icon backend">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                  <path d="M8 21h8"></path>
-                  <path d="M12 17v4"></path>
-                </svg>
-              </div>
-              <div class="status-info">
-                <span class="status-label">Backend API</span>
-                <span class="status-badge connected">{{ dashboardData.backendStatus?.status }}</span>
-              </div>
+            <div class="summary-info">
+              <span class="summary-value">{{ summaryData.occupiedProperties }}</span>
+              <span class="summary-label">Occupied</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card coming-soon-card" style="grid-column: 1 / -1;">
-        <div class="card-header">
-          <h2 class="card-title">Upcoming Features</h2>
-        </div>
+      <div class="card summary-card">
         <div class="card-body">
-          <div class="features-grid grid grid-4">
-            <div class="feature-item">
-              <div class="feature-icon properties">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
-              </div>
-              <h3>Properties</h3>
-              <p>Property Management</p>
-              <span class="status-badge coming-soon">Phase 2</span>
+          <div class="summary-item">
+            <div class="summary-icon vacant">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+              </svg>
             </div>
-
-            <div class="feature-item">
-              <div class="feature-icon tenants">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-              <h3>Tenants</h3>
-              <p>Tenant Management</p>
-              <span class="status-badge coming-soon">Phase 3</span>
-            </div>
-
-            <div class="feature-item">
-              <div class="feature-icon rent">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="1" x2="12" y2="23"></line>
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                </svg>
-              </div>
-              <h3>Rent</h3>
-              <p>Rent Generation & Tracking</p>
-              <span class="status-badge coming-soon">Later Phase</span>
-            </div>
-
-            <div class="feature-item">
-              <div class="feature-icon payments">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="1" y="4" width="22" height="16" rx="2"></rect>
-                  <line x1="1" y1="10" x2="23" y2="10"></line>
-                </svg>
-              </div>
-              <h3>Payments</h3>
-              <p>Payment Processing</p>
-              <span class="status-badge coming-soon">Later Phase</span>
-            </div>
-
-            <div class="feature-item">
-              <div class="feature-icon reports">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-              </div>
-              <h3>Reports</h3>
-              <p>Reports & Analytics</p>
-              <span class="status-badge coming-soon">Later Phase</span>
-            </div>
-
-            <div class="feature-item">
-              <div class="feature-icon settings">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-              </div>
-              <h3>Settings</h3>
-              <p>System Configuration</p>
-              <span class="status-badge coming-soon">Later Phase</span>
+            <div class="summary-info">
+              <span class="summary-value">{{ summaryData.vacantProperties }}</span>
+              <span class="summary-label">Vacant</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="card summary-card">
+        <div class="card-body">
+          <div class="summary-item">
+            <div class="summary-icon tenants">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="summary-info">
+              <span class="summary-value">{{ summaryData.activeTenants }}</span>
+              <span class="summary-label">Active Tenants</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card summary-card highlight">
+        <div class="card-body">
+          <div class="summary-item">
+            <div class="summary-icon rent-due">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+            <div class="summary-info">
+              <span class="summary-value">{{ formatCurrency(summaryData.totalRentDue) }}</span>
+              <span class="summary-label">Total Rent Due</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card summary-card highlight">
+        <div class="card-body">
+          <div class="summary-item">
+            <div class="summary-icon rent-collected">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+                <path d="M12 6v12"></path>
+              </svg>
+            </div>
+            <div class="summary-info">
+              <span class="summary-value">{{ formatCurrency(summaryData.totalRentCollected) }}</span>
+              <span class="summary-label">Total Collected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card summary-card warning">
+        <div class="card-body">
+          <div class="summary-item">
+            <div class="summary-icon outstanding">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <div class="summary-info">
+              <span class="summary-value">{{ formatCurrency(summaryData.totalOutstanding) }}</span>
+              <span class="summary-label">Total Outstanding</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card summary-card">
+        <div class="card-body">
+          <div class="summary-item">
+            <div class="summary-icon pending">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <div class="summary-info">
+              <span class="summary-value">{{ summaryData.pendingRents }}</span>
+              <span class="summary-label">Pending Rents</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Summary / Rent Alerts -->
+    @if (summaryData.notificationSummary) {
+      <div class="card alert-summary-card">
+        <div class="card-header">
+          <h2 class="card-title">Rent Alerts</h2>
+        </div>
+        <div class="card-body">
+          <div class="alert-grid grid grid-4">
+            <div class="alert-item high" [attr.data-cy]="'overdue-alert'">
+              <div class="alert-icon overdue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div class="alert-info">
+                <span class="alert-count">{{ summaryData.notificationSummary.overdueCount }}</span>
+                <span class="alert-label">Overdue</span>
+              </div>
+            </div>
+            <div class="alert-item medium" [attr.data-cy]="'pending-alert'">
+              <div class="alert-icon pending">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <div class="alert-info">
+                <span class="alert-count">{{ summaryData.notificationSummary.pendingCount }}</span>
+                <span class="alert-label">Pending</span>
+              </div>
+            </div>
+            <div class="alert-item medium" [attr.data-cy]="'partial-alert'">
+              <div class="alert-icon partial">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <div class="alert-info">
+                <span class="alert-count">{{ summaryData.notificationSummary.partialCount }}</span>
+                <span class="alert-label">Partial</span>
+              </div>
+            </div>
+            <div class="alert-item low" [attr.data-cy]="'upcoming-alert'">
+              <div class="alert-icon upcoming">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="alert-info">
+                <span class="alert-count">{{ summaryData.notificationSummary.upcomingCount }}</span>
+                <span class="alert-label">Upcoming</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Rent Summary Section -->
+    <div class="section-grid grid grid-2">
+      <div class="card rent-summary-card">
+        <div class="card-header">
+          <h2 class="card-title">Rent Summary (Current Month)</h2>
+        </div>
+        <div class="card-body">
+          <div class="rent-summary-grid">
+            <div class="rent-summary-item">
+              <span class="rent-summary-label">Total Rent</span>
+              <span class="rent-summary-value">{{ formatCurrency(summaryData.rentSummary.totalRent) }}</span>
+            </div>
+            <div class="rent-summary-item">
+              <span class="rent-summary-label">Collected</span>
+              <span class="rent-summary-value collected">{{ formatCurrency(summaryData.rentSummary.paidRent) }}</span>
+            </div>
+            <div class="rent-summary-item">
+              <span class="rent-summary-label">Partially Paid</span>
+              <span class="rent-summary-value partial">{{ formatCurrency(summaryData.rentSummary.partiallyPaidRent) }}</span>
+            </div>
+            <div class="rent-summary-item">
+              <span class="rent-summary-label">Pending</span>
+              <span class="rent-summary-value pending">{{ formatCurrency(summaryData.rentSummary.pendingRent) }}</span>
+            </div>
+            <div class="rent-summary-item total">
+              <span class="rent-summary-label">Outstanding</span>
+              <span class="rent-summary-value outstanding">{{ formatCurrency(summaryData.rentSummary.outstandingAmount) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card payment-summary-card">
+        <div class="card-header">
+          <h2 class="card-title">Payment Summary (Current Month)</h2>
+        </div>
+        <div class="card-body">
+          <div class="payment-summary-grid">
+            <div class="payment-summary-item">
+              <span class="payment-summary-label">Total Payments</span>
+              <span class="payment-summary-value">{{ summaryData.paymentSummary.totalPayments }}</span>
+            </div>
+            <div class="payment-summary-item">
+              <span class="payment-summary-label">Amount Collected</span>
+              <span class="payment-summary-value collected">{{ formatCurrency(summaryData.paymentSummary.totalAmountCollected) }}</span>
+            </div>
+            <div class="payment-summary-item">
+              <span class="payment-summary-label">Completed</span>
+              <span class="payment-summary-value">{{ summaryData.paymentSummary.completedPayments }}</span>
+            </div>
+            <div class="payment-summary-item">
+              <span class="payment-summary-label">Partial</span>
+              <span class="payment-summary-value partial">{{ summaryData.paymentSummary.partialPayments }}</span>
+            </div>
+          </div>
+
+          @if (summaryData.paymentSummary.paymentMethodBreakdown && summaryData.paymentSummary.paymentMethodBreakdown.length > 0) {
+            <div class="payment-method-breakdown">
+              <h4 class="breakdown-title">Payment Methods</h4>
+              <div class="method-grid">
+                @for (method of summaryData.paymentSummary.paymentMethodBreakdown; track method.paymentMethod) {
+                  <div class="method-item">
+                    <span class="method-name">{{ method.paymentMethod }}</span>
+                    <span class="method-amount">{{ formatCurrency(method.totalAmount) }}</span>
+                    <span class="method-count">({{ method.count }})</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Rent Overview -->
+    @if (summaryData.monthlyRentOverview && summaryData.monthlyRentOverview.length > 0) {
+      <div class="card monthly-overview-card">
+        <div class="card-header">
+          <h2 class="card-title">Monthly Rent Overview (Last 12 Months)</h2>
+        </div>
+        <div class="card-body">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Rent Due</th>
+                  <th>Collected</th>
+                  <th>Outstanding</th>
+                  <th>Paid</th>
+                  <th>Partial</th>
+                  <th>Pending</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (month of summaryData.monthlyRentOverview; track month.month + '-' + month.year) {
+                  <tr>
+                    <td>{{ month.monthName }} {{ month.year }}</td>
+                    <td>{{ formatCurrency(month.rentDue) }}</td>
+                    <td class="collected">{{ formatCurrency(month.collected) }}</td>
+                    <td class="outstanding">{{ formatCurrency(month.outstanding) }}</td>
+                    <td><span class="status-badge paid">{{ month.paidCount }}</span></td>
+                    <td><span class="status-badge partial">{{ month.partialCount }}</span></td>
+                    <td><span class="status-badge pending">{{ month.pendingCount }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="card quick-actions-card">
+      <div class="card-header">
+        <h2 class="card-title">Quick Actions</h2>
+      </div>
+      <div class="card-body">
+        <div class="actions-grid grid grid-4">
+          <a routerLink="/tenants" class="action-btn" [attr.data-cy]="'add-tenant-btn'">
+            <div class="action-icon tenants">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <line x1="19" y1="16" x2="23" y2="20"></line>
+              </svg>
+            </div>
+            <span>Add Tenant</span>
+          </a>
+          <a routerLink="/properties" class="action-btn" [attr.data-cy]="'add-property-btn'">
+            <div class="action-icon properties">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                <line x1="12" y1="16" x2="12" y2="20"></line>
+                <line x1="10" y1="18" x2="14" y2="18"></line>
+              </svg>
+            </div>
+            <span>Add Property</span>
+          </a>
+          <a routerLink="/rents" class="action-btn" [attr.data-cy]="'add-rent-btn'">
+            <div class="action-icon rent">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                <line x1="12" y1="16" x2="12" y2="20"></line>
+              </svg>
+            </div>
+            <span>Add Rent</span>
+          </a>
+          <a routerLink="/payments" class="action-btn" [attr.data-cy]="'record-payment-btn'">
+            <div class="action-icon payments">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+                <line x1="12" y1="6" x2="12" y2="14"></line>
+              </svg>
+            </div>
+            <span>Record Payment</span>
+          </a>
         </div>
       </div>
     </div>

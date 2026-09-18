@@ -26,6 +26,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final RentRepository rentRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public PaymentResponse createPayment(PaymentRequest request) {
@@ -91,6 +92,9 @@ public class PaymentService {
 
         // Update rent status based on total payments
         updateRentStatusBasedOnPayments(rent);
+
+        // Create payment received notification
+        notificationService.createPaymentReceivedNotification(saved);
 
         return PaymentResponse.from(saved);
     }
@@ -248,6 +252,7 @@ public class PaymentService {
 
         // Only update if status actually changed
         if (rent.getStatus() != newStatus) {
+            Rent.Status oldStatus = rent.getStatus();
             rent.setStatus(newStatus);
             if (newStatus == Rent.Status.PAID) {
                 rent.setPaidDate(LocalDate.now());
@@ -261,6 +266,11 @@ public class PaymentService {
             }
             rentRepository.save(rent);
             log.info("Rent status updated to {} for rent id: {}", newStatus, rent.getId());
+
+            // Create fully paid notification when rent transitions to PAID
+            if (newStatus == Rent.Status.PAID && oldStatus != Rent.Status.PAID) {
+                notificationService.createFullyPaidNotification(rent);
+            }
         }
     }
 

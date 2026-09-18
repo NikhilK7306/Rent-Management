@@ -5,6 +5,7 @@ import com.rentms.dto.rent.RentRequest;
 import com.rentms.dto.rent.RentResponse;
 import com.rentms.dto.rent.RentStatusRequest;
 import com.rentms.dto.rent.TotalOutstandingRequest;
+import com.rentms.entity.Notification;
 import com.rentms.entity.Property;
 import com.rentms.entity.Rent;
 import com.rentms.entity.Tenant;
@@ -41,6 +42,7 @@ public class RentService {
     private final RentRepository rentRepository;
     private final TenantRepository tenantRepository;
     private final PropertyRepository propertyRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public RentResponse createRent(RentRequest request) {
@@ -152,6 +154,29 @@ public class RentService {
 
         Rent updated = rentRepository.save(rent);
         log.info("Rent status updated for id: {}", updated.getId());
+
+        // Create notifications for status changes
+        if (newStatus == Rent.Status.PAID && currentStatus != Rent.Status.PAID) {
+            notificationService.createFullyPaidNotification(rent);
+        } else if (newStatus == Rent.Status.OVERDUE && currentStatus != Rent.Status.OVERDUE) {
+            // Create overdue notification
+            String referenceKey = "RENT_OVERDUE_" + rent.getId();
+            String title = "Rent Overdue";
+            String message = String.format("%s's rent is overdue. Outstanding amount: %s.",
+                    rent.getTenant().getFullName(), rent.getMonthlyRent());
+            notificationService.createNotificationIfNotExists(referenceKey, Notification.Type.RENT_OVERDUE,
+                    title, message, Notification.Priority.HIGH, rent.getTenant(), rent.getProperty(), rent, null);
+        } else if (newStatus == Rent.Status.PARTIAL && currentStatus != Rent.Status.PARTIAL) {
+            // Create partial payment notification
+            String referenceKey = "RENT_PARTIAL_" + rent.getId();
+            BigDecimal outstanding = rent.getMonthlyRent().subtract(rent.getPaidAmount() != null ? rent.getPaidAmount() : BigDecimal.ZERO);
+            String title = "Partial Payment";
+            String message = String.format("%s has partially paid the %s %d rent. %s remains outstanding.",
+                    rent.getTenant().getFullName(), getMonthName(rent.getRentMonth()), rent.getRentYear(), outstanding);
+            notificationService.createNotificationIfNotExists(referenceKey, Notification.Type.RENT_PARTIAL,
+                    title, message, Notification.Priority.MEDIUM, rent.getTenant(), rent.getProperty(), rent, null);
+        }
+
         return RentResponse.from(updated);
     }
 
@@ -508,5 +533,11 @@ public class RentService {
         } catch (Exception e) {
             log.error("Error during scheduled rent generation", e);
         }
+    }
+
+    private String getMonthName(int month) {
+        String[] months = {"January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
+        return months[month - 1];
     }
 }
