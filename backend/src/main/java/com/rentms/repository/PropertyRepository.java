@@ -17,6 +17,6 @@ public interface PropertyRepository extends JpaRepository<Property, Long>, Prope
 
     boolean existsByPropertyCode(String propertyCode);
 
-    @Query("SELECT COUNT(p) FROM Property p WHERE p.status = :status AND p.tenants IS NOT EMPTY")
+    @Query("SELECT COUNT(p) FROM Property p WHERE p.status = :status AND EXISTS (SELECT t FROM Tenant t WHERE t.propertyId = p.id AND t.status = com.rentms.entity.Tenant.Status.ACTIVE)")
     long countByStatusAndTenantsIsNotEmpty(@Param("status") Property.Status status);
 }

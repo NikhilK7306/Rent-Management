@@ -14,13 +14,19 @@ import java.util.Date;
 public class JwtService {
 
     private final JwtProperties jwtProperties;
+    private final ApplicationGenerationProvider generationProvider;
     private SecretKey secretKey;
+
+    public ApplicationGenerationProvider getGenerationProvider() {
+        return generationProvider;
+    }
 
     // Hardcoded fallback secret to ensure consistency across environments
     private static final String HARDCODED_SECRET = "dev-secret-key-min-256-bits-for-hmac-sha256-change-in-production";
 
-    public JwtService(JwtProperties jwtProperties) {
+    public JwtService(JwtProperties jwtProperties, ApplicationGenerationProvider generationProvider) {
         this.jwtProperties = jwtProperties;
+        this.generationProvider = generationProvider;
     }
 
     @PostConstruct
@@ -29,12 +35,12 @@ public class JwtService {
         System.err.println("=== JWT SERVICE INIT ===");
         System.err.println("JWT Secret from properties: [" + secret + "]");
         System.err.println("JWT Secret length: " + (secret != null ? secret.length() : "null"));
-        
+
         // Use hardcoded secret as fallback if properties secret is null/empty
         String effectiveSecret = (secret != null && !secret.isBlank()) ? secret : HARDCODED_SECRET;
         System.err.println("Effective JWT Secret: [" + effectiveSecret + "]");
         System.err.println("Effective JWT Secret length: " + effectiveSecret.length());
-        
+
         byte[] keyBytes = effectiveSecret.getBytes(StandardCharsets.UTF_8);
         System.err.println("Key bytes length: " + keyBytes.length);
         System.err.println("First 10 bytes: " + java.util.Arrays.toString(java.util.Arrays.copyOf(keyBytes, Math.min(10, keyBytes.length))));
@@ -53,6 +59,7 @@ public class JwtService {
                 .subject(user.getMobileNumber())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
+                .claim("generationId", generationProvider.getGenerationId())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(secretKey)
@@ -71,9 +78,21 @@ public class JwtService {
         return extractAllClaims(token).get("role", String.class);
     }
 
+    public String extractGenerationId(String token) {
+        return extractAllClaims(token).get("generationId", String.class);
+    }
+
     public boolean isTokenValid(String token, User user) {
         try {
             String mobileNumber = extractMobileNumber(token);
+            String tokenGenerationId = extractGenerationId(token);
+            String currentGenerationId = generationProvider.getGenerationId();
+
+            // Check if generation ID matches (invalidates tokens on app restart)
+            if (!currentGenerationId.equals(tokenGenerationId)) {
+                return false;
+            }
+
             return mobileNumber.equals(user.getMobileNumber()) && !isTokenExpired(token);
         } catch (Exception e) {
             return false;

@@ -28,9 +28,7 @@ import java.util.List;
 public class ReportsService {
 
     private final RentRepository rentRepository;
-    private final RentRepositoryCustom rentRepositoryCustom;
     private final PaymentRepository paymentRepository;
-    private final PaymentRepositoryCustom paymentRepositoryCustom;
     private final TenantRepository tenantRepository;
     private final PropertyRepository propertyRepository;
     private final jakarta.persistence.EntityManager entityManager;
@@ -42,31 +40,31 @@ public class ReportsService {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 
         // Get total records and aggregates
-        BigDecimal totalRent = rentRepositoryCustom.sumMonthlyRentByFilters(
+        BigDecimal totalRent = rentRepository.sumMonthlyRentByFilters(
                 request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                 request.getFromDate(), request.getToDate()
         );
-        BigDecimal totalPaid = rentRepositoryCustom.sumPaidAmountByFilters(
+        BigDecimal totalPaid = rentRepository.sumPaidAmountByFilters(
                 request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                 request.getFromDate(), request.getToDate()
         );
         BigDecimal totalOutstanding = totalRent.subtract(totalPaid);
 
-        long paidCount = rentRepositoryCustom.countByStatusAndFilters(Rent.Status.PAID,
+        long paidCount = rentRepository.countByStatusAndFilters(Rent.Status.PAID,
                 request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                 request.getFromDate(), request.getToDate());
-        long partialCount = rentRepositoryCustom.countByStatusAndFilters(Rent.Status.PARTIAL,
+        long partialCount = rentRepository.countByStatusAndFilters(Rent.Status.PARTIAL,
                 request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                 request.getFromDate(), request.getToDate());
-        long pendingCount = rentRepositoryCustom.countByStatusAndFilters(Rent.Status.PENDING,
+        long pendingCount = rentRepository.countByStatusAndFilters(Rent.Status.PENDING,
                 request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                 request.getFromDate(), request.getToDate()) +
-                rentRepositoryCustom.countByStatusAndFilters(Rent.Status.OVERDUE,
+                rentRepository.countByStatusAndFilters(Rent.Status.OVERDUE,
                         request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                         request.getFromDate(), request.getToDate());
 
         // Get paginated items
-        Page<RentReportResponse.RentReportItem> itemsPage = rentRepositoryCustom.getRentReport(request, pageable);
+        Page<RentReportResponse.RentReportItem> itemsPage = rentRepository.getRentReport(request, pageable);
 
         return RentReportResponse.builder()
                 .totalRecords(itemsPage.getTotalElements())
@@ -86,12 +84,12 @@ public class ReportsService {
 
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 
-        BigDecimal totalAmount = paymentRepositoryCustom.sumAmountByFilters(
+        BigDecimal totalAmount = paymentRepository.sumAmountByFilters(
                 request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                 request.getFromDate(), request.getToDate()
         );
 
-        List<PaymentReportResponse.PaymentMethodBreakdown> paymentMethodBreakdown = paymentRepositoryCustom.getPaymentMethodBreakdown(
+        List<PaymentReportResponse.PaymentMethodBreakdown> paymentMethodBreakdown = paymentRepository.getPaymentMethodBreakdown(
                 request.getTenantId(), request.getPropertyId(), request.getMonth(), request.getYear(),
                 request.getFromDate(), request.getToDate()
         );
@@ -99,7 +97,7 @@ public class ReportsService {
         long completedCount = paymentRepository.countByStatus(Payment.Status.PAID);
         long partialCount = paymentRepository.countByStatus(Payment.Status.PARTIAL);
 
-        Page<PaymentReportResponse.PaymentReportItem> itemsPage = paymentRepositoryCustom.getPaymentReport(request, pageable);
+        Page<PaymentReportResponse.PaymentReportItem> itemsPage = paymentRepository.getPaymentReport(request, pageable);
 
         return PaymentReportResponse.builder()
                 .totalRecords(itemsPage.getTotalElements())
@@ -201,7 +199,7 @@ public class ReportsService {
             JOIN tenants t ON r.tenant_id = t.id
             JOIN properties p ON r.property_id = p.id
             """ + whereClause + """
-            ORDER BY r.rent_year DESC, r.rent_month DESC, r.created_at DESC
+             ORDER BY r.rent_year DESC, r.rent_month DESC, r.created_at DESC
             """;
 
         var query = entityManager.createNativeQuery(sql);
@@ -359,7 +357,7 @@ public class ReportsService {
     public RentStatusReportResponse getRentStatusReport(Integer month, Integer year, LocalDate fromDate, LocalDate toDate) {
         log.debug("Generating rent status report for month: {}, year: {}", month, year);
 
-        List<Object[]> results = rentRepositoryCustom.getRentStatusReport(null, null, month, year, fromDate, toDate);
+        List<Object[]> results = rentRepository.getRentStatusReport(null, null, month, year, fromDate, toDate);
 
         long paidCount = 0;
         long partialCount = 0;

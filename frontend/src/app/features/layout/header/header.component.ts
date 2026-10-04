@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject, OnInit, signal, compute
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NotificationService } from '@core/services/notification.service';
+import { SessionTimerService } from '@core/services/session-timer.service';
 import { NotificationCenterComponent } from '../../notification/notification-center.component';
 
 @Component({
@@ -13,6 +14,7 @@ import { NotificationCenterComponent } from '../../notification/notification-cen
 })
 export class HeaderComponent implements OnInit {
   private notificationService = inject(NotificationService);
+  private sessionTimerService = inject(SessionTimerService);
 
   @Input() isSidebarCollapsed = false;
   @Output() toggleSidebar = new EventEmitter<void>();
@@ -24,16 +26,18 @@ export class HeaderComponent implements OnInit {
   showNotificationCenter = signal(false);
   unreadCount = signal(0);
 
+  remainingTime = computed(() => this.sessionTimerService.remainingTime());
+  expirationTimestamp = computed(() => this.sessionTimerService.expirationTimestamp());
+
   ngOnInit(): void {
     this.loadUnreadCount();
-    // Refresh unread count every 30 seconds
     setInterval(() => this.loadUnreadCount(), 30000);
   }
 
   loadUnreadCount(): void {
     this.notificationService.getUnreadCount().subscribe({
       next: (count) => this.unreadCount.set(count),
-      error: () => {} // Silently ignore errors
+      error: () => {}
     });
   }
 
@@ -51,5 +55,11 @@ export class HeaderComponent implements OnInit {
   get unreadBadge(): string {
     const count = this.unreadCount();
     return count > 99 ? '99+' : count.toString();
+  }
+
+  formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 }

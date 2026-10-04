@@ -120,7 +120,21 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
         for (int i = 0; i < params.size(); i++) {
             query.setParameter(i + 1, params.get(i));
         }
-        return (BigDecimal) query.getSingleResult();
+        Object result = query.getSingleResult();
+        return toBigDecimal(result);
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        }
+        if (value instanceof Number) {
+            return new BigDecimal(value.toString());
+        }
+        return BigDecimal.ZERO;
     }
 
     @Override
@@ -140,7 +154,7 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
             JOIN tenants t ON r.tenant_id = t.id
             JOIN properties pr ON r.property_id = pr.id
             """ + whereClause + """
-            GROUP BY p.payment_method
+             GROUP BY p.payment_method
             ORDER BY total_amount DESC
             """;
 
@@ -200,7 +214,7 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
             JOIN tenants t ON r.tenant_id = t.id
             JOIN properties pr ON r.property_id = pr.id
             """ + whereClause + """
-            ORDER BY p.payment_date DESC, p.created_at DESC
+             ORDER BY p.payment_date DESC, p.created_at DESC
             """;
 
         Query dataQuery = entityManager.createNativeQuery(dataSql);

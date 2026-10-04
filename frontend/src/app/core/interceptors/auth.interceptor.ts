@@ -2,10 +2,12 @@ import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { SessionTimerService } from '../services/session-timer.service';
 import { Router } from '@angular/router';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const sessionTimerService = inject(SessionTimerService);
   const router = inject(Router);
 
   const token = authService.accessToken;
@@ -24,6 +26,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !isAuthEndpoint && !isHealthEndpoint) {
+        sessionTimerService.stopTimer();
         authService.logout();
         router.navigate(['/login']);
       }

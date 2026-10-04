@@ -31,7 +31,7 @@ describe('AuthService', () => {
 
   afterEach(() => {
     httpMock.verify();
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('should be created', () => {
@@ -65,7 +65,7 @@ describe('AuthService', () => {
     expect(service.currentUser).toEqual(mockResponse.user);
     expect(service.accessToken).toBe('test-jwt-token');
 
-    const stored = localStorage.getItem('rentms_auth_state');
+    const stored = sessionStorage.getItem('rentms_auth_state');
     expect(stored).toBeTruthy();
     const parsed = JSON.parse(stored!);
     expect(parsed.isAuthenticated).toBeTrue();
@@ -88,7 +88,7 @@ describe('AuthService', () => {
     expect(service.isAuthenticated).toBeFalse();
     expect(service.currentUser).toBeNull();
     expect(service.accessToken).toBeNull();
-    expect(localStorage.getItem('rentms_auth_state')).toBeNull();
+    expect(sessionStorage.getItem('rentms_auth_state')).toBeNull();
   });
 
   it('should clear auth state on login error', () => {
@@ -102,6 +102,6 @@ describe('AuthService', () => {
     req.flush({ message: 'Invalid credentials' }, { status: 401, statusText: 'Unauthorized' });
 
     expect(service.isAuthenticated).toBeFalse();
-    expect(localStorage.getItem('rentms_auth_state')).toBeNull();
+    expect(sessionStorage.getItem('rentms_auth_state')).toBeNull();
   });
 });

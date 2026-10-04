@@ -142,16 +142,16 @@
             <tr>
               <td class="tenant-col">
                 <div class="tenant-info">
-                  <span class="tenant-name">{{ rent.tenant?.fullName || '—' }}</span>
-                  <span class="tenant-mobile">{{ rent.tenant?.mobileNumber || '—' }}</span>
+                  <span class="tenant-name">{{ rent.tenant.fullName }}</span>
+                  <span class="tenant-mobile">{{ rent.tenant.mobileNumber }}</span>
                 </div>
               </td>
               <td class="property-col">
                 @if (rent.property) {
                   <div class="property-info">
-                    <span class="property-code">{{ rent.property?.propertyCode }}</span>
-                    <span class="property-name">{{ rent.property?.propertyName }}</span>
-                    <span class="property-type">{{ rent.property?.propertyType }}</span>
+                    <span class="property-code">{{ rent.property.propertyCode }}</span>
+                    <span class="property-name">{{ rent.property.propertyName }}</span>
+                    <span class="property-type">{{ rent.property.propertyType }}</span>
                   </div>
                 } @else {
                   <span class="not-assigned">Not Assigned</span>

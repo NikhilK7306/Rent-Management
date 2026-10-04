@@ -1,0 +1,128 @@
+<div class="settings-page">
+  <div class="page-header">
+    <h1 class="page-title">Settings</h1>
+    <p class="page-subtitle">Manage application and security preferences.</p>
+  </div>
+
+  <div class="settings-container">
+    <section class="settings-section">
+      <h2 class="section-title">Session & Security</h2>
+
+      <div class="settings-form">
+        <div class="form-group">
+          <label for="sessionTimeout" class="form-label">Session timeout</label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              id="sessionTimeout"
+              class="form-input"
+              [(ngModel)]="sessionTimeout"
+              [min]="5"
+              [max]="1440"
+              [disabled]="isLoading() || saving()"
+              required
+            />
+            <span class="input-unit">minutes</span>
+          </div>
+          <p class="form-hint">Minimum: 5 minutes, Maximum: 24 hours (1440 minutes)</p>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [(ngModel)]="autoLogout"
+              [disabled]="isLoading() || saving()"
+            />
+            <span class="checkbox-text">Automatically log out when session expires</span>
+          </label>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [(ngModel)]="logoutOnClose"
+              [disabled]="isLoading() || saving()"
+            />
+            <span class="checkbox-text">Log out when browser/tab is closed</span>
+          </label>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [(ngModel)]="invalidateOnRestart"
+              [disabled]="isLoading() || saving()"
+            />
+            <span class="checkbox-text">Invalidate sessions when application restarts</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="btn btn-primary"
+            (click)="saveSettings()"
+            [disabled]="isLoading() || saving()"
+            type="button"
+          >
+            @if (saving()) {
+              <span class="btn-spinner"></span>
+              Saving...
+            } @else {
+              Save Settings
+            }
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-section current-session">
+      <h2 class="section-title">Current Session</h2>
+
+      <div class="session-info">
+        <div class="info-row">
+          <span class="info-label">Logged in as:</span>
+          <span class="info-value">{{ currentUser()?.name || 'System Admin' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Session started:</span>
+          <span class="info-value">{{ getSessionStarted() }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Expires:</span>
+          <span class="info-value">{{ sessionExpiration() ? (sessionExpiration() | date: 'medium') : '—' }}</span>
+        </div>
+        <div class="info-row remaining-row">
+          <span class="info-label">Remaining:</span>
+          <span class="info-value countdown" [class.warning]="sessionRemaining() <= 300" [class.danger]="sessionRemaining() <= 60">
+            {{ formatTime(sessionRemaining()) }}
+          </span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert alert-success" role="alert">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Loading settings...</p>
+    </div>
+  }
+</div>

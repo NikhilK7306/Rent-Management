@@ -34,7 +34,7 @@ public class NotificationResponse {
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .priority(notification.getPriority().name())
-                .isRead(notification.getIsRead())
+                .isRead(notification.isRead())
                 .tenantId(notification.getTenant() != null ? notification.getTenant().getId() : null)
                 .tenantName(notification.getTenant() != null ? notification.getTenant().getFullName() : null)
                 .propertyId(notification.getProperty() != null ? notification.getProperty().getId() : null)

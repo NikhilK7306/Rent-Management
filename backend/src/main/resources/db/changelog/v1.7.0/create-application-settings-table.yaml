@@ -1,0 +1,141 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rentms
+      comment: Create application_settings table
+      changes:
+        - createTable:
+            tableName: application_settings
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: setting_key
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: setting_value
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: description
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2
+      author: rentms
+      comment: Create index on setting_key for fast lookups
+      changes:
+        - createIndex:
+            tableName: application_settings
+            indexName: idx_application_settings_key
+            columns:
+              - column:
+                  name: setting_key
+            unique: true
+
+  - changeSet:
+      id: 3
+      author: rentms
+      comment: Insert default session settings
+      changes:
+        - insert:
+            tableName: application_settings
+            columns:
+              - column:
+                  name: setting_key
+                  value: "session.timeout.minutes"
+              - column:
+                  name: setting_value
+                  value: "30"
+              - column:
+                  name: description
+                  value: "Session timeout in minutes (5-1440)"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+        - insert:
+            tableName: application_settings
+            columns:
+              - column:
+                  name: setting_key
+                  value: "session.auto_logout_on_expiration"
+              - column:
+                  name: setting_value
+                  value: "true"
+              - column:
+                  name: description
+                  value: "Automatically log out when session expires"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+        - insert:
+            tableName: application_settings
+            columns:
+              - column:
+                  name: setting_key
+                  value: "session.logout_on_browser_close"
+              - column:
+                  name: setting_value
+                  value: "true"
+              - column:
+                  name: description
+                  value: "Log out when browser/tab is closed (uses sessionStorage)"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+        - insert:
+            tableName: application_settings
+            columns:
+              - column:
+                  name: setting_key
+                  value: "session.invalidate_on_restart"
+              - column:
+                  name: setting_value
+                  value: "true"
+              - column:
+                  name: description
+                  value: "Invalidate sessions when application restarts"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+
+  - changeSet:
+      id: 4
+      author: rentms
+      comment: Add check constraint for session timeout range
+      changes:
+        - sql:
+            sql: ALTER TABLE application_settings ADD CONSTRAINT chk_session_timeout_range CHECK (setting_key != 'session.timeout.minutes' OR (setting_value ~ '^\d+$' AND setting_value::int >= 5 AND setting_value::int <= 1440))

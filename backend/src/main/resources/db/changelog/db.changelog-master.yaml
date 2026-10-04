@@ -19,3 +19,5 @@ databaseChangeLog:
       file: classpath:db/changelog/v1.5.0/update-rents-status-constraint.yaml
   - include:
       file: classpath:db/changelog/v1.6.0/create-notifications-table.yaml
+  - include:
+      file: classpath:db/changelog/v1.7.0/create-application-settings-table.yaml

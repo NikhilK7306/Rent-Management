@@ -43,7 +43,7 @@ export class PropertyFormComponent {
       } else {
         this.resetForm();
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   populateForm(): void {

@@ -41,6 +41,16 @@
         <span class="status-text">Connected</span>
       </div>
 
+      <!-- Session Timer -->
+      <div class="session-timer" [class.warning]="remainingTime() <= 300 && remainingTime() > 60" [class.danger]="remainingTime() > 0 && remainingTime() <= 60">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span class="session-timer-text">{{ formatTime(remainingTime()) }}</span>
+        <span class="session-timer-label">remaining</span>
+      </div>
+
       <!-- Notification Bell -->
       <button
         class="notification-bell"

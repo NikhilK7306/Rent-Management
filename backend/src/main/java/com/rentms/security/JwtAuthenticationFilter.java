@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        
+
         // Debug logging
         System.out.println("JWT Filter - Request URI: " + request.getRequestURI());
         System.out.println("JWT Filter - Auth Header: " + authHeader);
@@ -62,7 +62,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                     System.out.println("JWT Filter - Authentication set for user: " + mobileNumber);
                 } else {
-                    System.out.println("JWT Filter - Token invalid or user not found");
+                    String generationId = jwtService.extractGenerationId(token);
+                    if (generationId != null && !generationId.equals(jwtService.getGenerationProvider().getGenerationId())) {
+                        System.out.println("JWT Filter - Token rejected: generation ID mismatch (application restarted)");
+                    } else {
+                        System.out.println("JWT Filter - Token invalid or user not found");
+                    }
                 }
             }
         } catch (JwtException | IllegalArgumentException e) {

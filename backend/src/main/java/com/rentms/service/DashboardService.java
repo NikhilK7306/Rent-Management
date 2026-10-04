@@ -28,9 +28,7 @@ import java.util.List;
 public class DashboardService {
 
     private final RentRepository rentRepository;
-    private final RentRepositoryCustom rentRepositoryCustom;
     private final PaymentRepository paymentRepository;
-    private final PaymentRepositoryCustom paymentRepositoryCustom;
     private final TenantRepository tenantRepository;
     private final PropertyRepository propertyRepository;
     private final NotificationService notificationService;
@@ -50,30 +48,30 @@ public class DashboardService {
         int currentMonth = now.getMonthValue();
         int currentYear = now.getYear();
 
-        BigDecimal totalRentDue = rentRepositoryCustom.sumMonthlyRentByFilters(null, null, currentMonth, currentYear, null, null);
-        BigDecimal totalRentCollected = rentRepositoryCustom.sumPaidAmountByFilters(null, null, currentMonth, currentYear, null, null);
+        BigDecimal totalRentDue = rentRepository.sumMonthlyRentByFilters(null, null, currentMonth, currentYear, null, null);
+        BigDecimal totalRentCollected = rentRepository.sumPaidAmountByFilters(null, null, currentMonth, currentYear, null, null);
         BigDecimal totalOutstanding = totalRentDue.subtract(totalRentCollected);
 
-        long pendingRents = rentRepositoryCustom.countByStatusAndFilters(Rent.Status.PENDING, null, null, currentMonth, currentYear, null, null) +
-                rentRepositoryCustom.countByStatusAndFilters(Rent.Status.OVERDUE, null, null, currentMonth, currentYear, null, null);
+        long pendingRents = rentRepository.countByStatusAndFilters(Rent.Status.PENDING, null, null, currentMonth, currentYear, null, null) +
+                rentRepository.countByStatusAndFilters(Rent.Status.OVERDUE, null, null, currentMonth, currentYear, null, null);
 
         // Rent summary details
-        long paidCount = rentRepositoryCustom.countByStatusAndFilters(Rent.Status.PAID, null, null, currentMonth, currentYear, null, null);
-        long partialCount = rentRepositoryCustom.countByStatusAndFilters(Rent.Status.PARTIAL, null, null, currentMonth, currentYear, null, null);
+        long paidCount = rentRepository.countByStatusAndFilters(Rent.Status.PAID, null, null, currentMonth, currentYear, null, null);
+        long partialCount = rentRepository.countByStatusAndFilters(Rent.Status.PARTIAL, null, null, currentMonth, currentYear, null, null);
 
         DashboardSummaryResponse.RentSummary rentSummary = DashboardSummaryResponse.RentSummary.builder()
                 .totalRent(totalRentDue)
                 .paidRent(totalRentCollected)
-                .partiallyPaidRent(BigDecimal.ZERO) // Will be calculated from partial rents
-                .pendingRent(BigDecimal.ZERO) // Will be calculated
+                .partiallyPaidRent(BigDecimal.ZERO)
+                .pendingRent(BigDecimal.ZERO)
                 .outstandingAmount(totalOutstanding)
                 .build();
 
         // Payment summary
-        BigDecimal totalPaymentsAmount = paymentRepositoryCustom.sumAmountByFilters(null, null, currentMonth, currentYear, null, null);
-        long completedPayments = paymentRepository.countByStatus(Payment.Status.PAID);
-        long partialPayments = paymentRepository.countByStatus(Payment.Status.PARTIAL);
-        List<DashboardSummaryResponse.PaymentMethodBreakdown> paymentMethodBreakdown = paymentRepositoryCustom.getPaymentMethodBreakdown(null, null, currentMonth, currentYear, null, null)
+        BigDecimal totalPaymentsAmount = paymentRepository.sumAmountByFilters(null, null, currentMonth, currentYear, null, null);
+        long completedPayments = paymentRepository.countByStatus(com.rentms.entity.Payment.Status.PAID);
+        long partialPayments = paymentRepository.countByStatus(com.rentms.entity.Payment.Status.PARTIAL);
+        List<DashboardSummaryResponse.PaymentMethodBreakdown> paymentMethodBreakdown = paymentRepository.getPaymentMethodBreakdown(null, null, currentMonth, currentYear, null, null)
                 .stream()
                 .map(pmb -> DashboardSummaryResponse.PaymentMethodBreakdown.builder()
                         .paymentMethod(pmb.getPaymentMethod())
@@ -94,11 +92,21 @@ public class DashboardService {
         List<DashboardSummaryResponse.MonthlyRentOverview> monthlyOverview = new ArrayList<>();
         for (int i = 11; i >= 0; i--) {
             YearMonth ym = YearMonth.from(now).minusMonths(i);
-            List<DashboardSummaryResponse.MonthlyRentOverview> monthData = rentRepositoryCustom.getMonthlyRentOverview(ym.getYear());
+            List<RentReportResponse.MonthlyRentOverview> monthData = rentRepository.getMonthlyRentOverview(ym.getYear());
             monthData.stream()
                     .filter(m -> m.getMonth() == ym.getMonthValue())
                     .findFirst()
-                    .ifPresent(monthlyOverview::add);
+                    .ifPresent(m -> monthlyOverview.add(DashboardSummaryResponse.MonthlyRentOverview.builder()
+                            .month(m.getMonth())
+                            .year(m.getYear())
+                            .monthName(m.getMonthName())
+                            .rentDue(m.getRentDue())
+                            .collected(m.getCollected())
+                            .outstanding(m.getOutstanding())
+                            .paidCount(m.getPaidCount())
+                            .partialCount(m.getPartialCount())
+                            .pendingCount(m.getPendingCount())
+                            .build()));
         }
 
         return DashboardSummaryResponse.builder()

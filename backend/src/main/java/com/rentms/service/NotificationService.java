@@ -4,6 +4,7 @@ import com.rentms.dto.notification.NotificationResponse;
 import com.rentms.dto.notification.NotificationSummaryResponse;
 import com.rentms.entity.Notification;
 import com.rentms.entity.Payment;
+import com.rentms.entity.Property;
 import com.rentms.entity.Rent;
 import com.rentms.entity.Tenant;
 import com.rentms.exception.NotificationNotFoundException;
@@ -67,7 +68,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new NotificationNotFoundException("Notification not found with id: " + id));
 
-        notification.setIsRead(true);
+        notification.setRead(true);
         Notification saved = notificationRepository.save(notification);
         log.info("Notification marked as read: {}", id);
         return NotificationResponse.from(saved);
@@ -98,7 +99,7 @@ public class NotificationService {
                          notificationRepository.countByTypeAndIsRead(Notification.Type.PAYMENT_RECEIVED, false);
 
         // Calculate total outstanding amount from overdue/pending/partial rents
-        BigDecimal totalOutstanding = BigDecimal.ZERO;
+        long totalOutstanding = 0L;
 
         return NotificationSummaryResponse.builder()
                 .totalUnread(notificationRepository.countUnread())
@@ -205,7 +206,7 @@ public class NotificationService {
         LocalDate today = LocalDate.now();
 
         // Find rents that are overdue (due date passed, not fully paid)
-        List<Rent> overdueRents = rentRepository.findOverdueRents(today);
+        List<Rent> overdueRents = rentRepository.findOverdueRents(today, Rent.Status.PAID);
 
         for (Rent rent : overdueRents) {
             String referenceKey = "RENT_OVERDUE_" + rent.getId();
@@ -227,7 +228,8 @@ public class NotificationService {
     @Transactional
     public void generateAggregatedOutstandingNotifications() {
         log.info("Generating aggregated outstanding notifications");
-        List<Object[]> tenantOutstandingData = rentRepository.getAggregatedOutstandingByTenant();
+        List<Object[]> tenantOutstandingData = rentRepository.getAggregatedOutstandingByTenant(
+                List.of(Rent.Status.PENDING, Rent.Status.OVERDUE, Rent.Status.PARTIAL));
 
         for (Object[] row : tenantOutstandingData) {
             Long tenantId = ((Number) row[0]).longValue();

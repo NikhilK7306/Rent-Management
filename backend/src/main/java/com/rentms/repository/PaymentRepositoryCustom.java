@@ -1,5 +1,6 @@
 package com.rentms.repository;
 
+import com.rentms.dto.reports.PaymentReportRequest;
 import com.rentms.dto.reports.PaymentReportResponse;
 import com.rentms.entity.Payment;
 import org.springframework.data.domain.Page;

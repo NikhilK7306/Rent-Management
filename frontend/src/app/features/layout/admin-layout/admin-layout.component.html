@@ -44,9 +44,6 @@
               <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
               @if (!isSidebarCollapsed) {
                 <span class="nav-label">{{ item.label }}</span>
-                @if (item.comingSoon) {
-                  <span class="status-badge coming-soon">Coming Soon</span>
-                }
               }
             </a>
           </li>

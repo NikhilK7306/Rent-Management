@@ -41,7 +41,7 @@ public class Notification {
     private Priority priority;
 
     @Column(name = "is_read", nullable = false)
-    private Boolean isRead = false;
+    private boolean isRead = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id")
@@ -72,9 +72,6 @@ public class Notification {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        if (isRead == null) {
-            isRead = false;
-        }
         if (priority == null) {
             priority = Priority.INFO;
         }

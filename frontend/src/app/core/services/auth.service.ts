@@ -22,7 +22,7 @@ export class AuthService {
       return { user: null, accessToken: null, isAuthenticated: false };
     }
     try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+      const stored = sessionStorage.getItem(AUTH_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as AuthState;
         if (parsed.accessToken && parsed.user) {
@@ -73,7 +73,7 @@ export class AuthService {
     };
     this.authStateSubject.next(state);
     if (this.isBrowser) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state));
+      sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state));
     }
   }
 
@@ -81,7 +81,7 @@ export class AuthService {
     const state: AuthState = { user: null, accessToken: null, isAuthenticated: false };
     this.authStateSubject.next(state);
     if (this.isBrowser) {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
+      sessionStorage.removeItem(AUTH_STORAGE_KEY);
     }
   }
 }

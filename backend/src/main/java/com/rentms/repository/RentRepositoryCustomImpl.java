@@ -112,7 +112,8 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
         for (int i = 0; i < params.size(); i++) {
             query.setParameter(i + 1, params.get(i));
         }
-        return (BigDecimal) query.getSingleResult();
+        Object result = query.getSingleResult();
+        return toBigDecimal(result);
     }
 
     @Override
@@ -130,7 +131,21 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
         for (int i = 0; i < params.size(); i++) {
             query.setParameter(i + 1, params.get(i));
         }
-        return (BigDecimal) query.getSingleResult();
+        Object result = query.getSingleResult();
+        return toBigDecimal(result);
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        }
+        if (value instanceof Number) {
+            return new BigDecimal(value.toString());
+        }
+        return BigDecimal.ZERO;
     }
 
     @Override
@@ -236,7 +251,7 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
             JOIN tenants t ON r.tenant_id = t.id
             JOIN properties p ON r.property_id = p.id
             """ + whereClause + """
-            ORDER BY r.rent_year DESC, r.rent_month DESC, r.created_at DESC
+             ORDER BY r.rent_year DESC, r.rent_month DESC, r.created_at DESC
             """;
 
         Query dataQuery = entityManager.createNativeQuery(dataSql);
@@ -296,7 +311,7 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
             JOIN tenants t ON r.tenant_id = t.id
             JOIN properties p ON r.property_id = p.id
             """ + whereClause + """
-            GROUP BY r.status
+             GROUP BY r.status
             """;
 
         Query query = entityManager.createNativeQuery(sql);
