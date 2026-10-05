@@ -59,7 +59,7 @@ export class AdminLayoutComponent implements OnInit {
 
   onLogout(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   getCurrentUser() {

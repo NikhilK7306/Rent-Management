@@ -28,7 +28,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401 && !isAuthEndpoint && !isHealthEndpoint) {
         sessionTimerService.stopTimer();
         authService.logout();
-        router.navigate(['/login']);
+        router.navigate(['/login'], { replaceUrl: true });
       }
       return throwError(() => error);
     })
