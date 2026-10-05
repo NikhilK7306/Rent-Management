@@ -40,6 +40,9 @@ export class RentFormComponent implements OnInit {
   years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i);
   rentStatuses = RENT_STATUSES;
 
+  // Flag to prevent infinite loops during auto-population
+  private isAutoPopulating = false;
+
   // Single month form
   singleForm = this.fb.nonNullable.group({
     tenantId: [0, [Validators.required]],
@@ -121,6 +124,24 @@ export class RentFormComponent implements OnInit {
     if (this.rent()) {
       this.populateForm();
     }
+
+    // Watch for tenantId changes to auto-populate property
+    effect(() => {
+      const form = this.getCurrentForm() as any;
+      const tenantId = form.get('tenantId')?.value;
+      if (tenantId && !this.isAutoPopulating) {
+        this.autoPopulateProperty(tenantId);
+      }
+    });
+
+    // Watch for propertyId changes to auto-populate tenant
+    effect(() => {
+      const form = this.getCurrentForm() as any;
+      const propertyId = form.get('propertyId')?.value;
+      if (propertyId && !this.isAutoPopulating) {
+        this.autoPopulateTenant(propertyId);
+      }
+    });
   }
 
   loadTenants(): void {
@@ -139,6 +160,26 @@ export class RentFormComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load properties:', err)
     });
+  }
+
+  private autoPopulateProperty(tenantId: number): void {
+    const tenant = this.tenants().find(t => t.id === tenantId);
+    if (tenant?.property?.id) {
+      this.isAutoPopulating = true;
+      const form = this.getCurrentForm() as any;
+      form.patchValue({ propertyId: tenant.property.id }, { emitEvent: false });
+      this.isAutoPopulating = false;
+    }
+  }
+
+  private autoPopulateTenant(propertyId: number): void {
+    const property = this.properties().find(p => p.id === propertyId);
+    if (property?.tenant?.id) {
+      this.isAutoPopulating = true;
+      const form = this.getCurrentForm() as any;
+      form.patchValue({ tenantId: property.tenant.id }, { emitEvent: false });
+      this.isAutoPopulating = false;
+    }
   }
 
   populateForm(): void {

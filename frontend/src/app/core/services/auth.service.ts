@@ -84,4 +84,16 @@ export class AuthService {
       sessionStorage.removeItem(AUTH_STORAGE_KEY);
     }
   }
+
+  updateToken(accessToken: string, user: UserDto): void {
+    const state: AuthState = {
+      user: user,
+      accessToken: accessToken,
+      isAuthenticated: true
+    };
+    this.authStateSubject.next(state);
+    if (this.isBrowser) {
+      sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state));
+    }
+  }
 }

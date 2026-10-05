@@ -2,6 +2,7 @@ package com.rentms.service;
 
 import com.rentms.dto.auth.LoginRequest;
 import com.rentms.dto.auth.LoginResponse;
+import com.rentms.dto.auth.RefreshTokenRequest;
 import com.rentms.entity.User;
 import com.rentms.exception.InvalidCredentialsException;
 import com.rentms.exception.UserInactiveException;
@@ -59,6 +60,39 @@ public class AuthService {
         String token = jwtService.generateToken(user);
 
         log.debug("Login successful for user: {}", user.getMobileNumber());
+        return LoginResponse.builder()
+                .accessToken(token)
+                .tokenType("Bearer")
+                .user(LoginResponse.UserDto.from(user))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public LoginResponse refreshToken(RefreshTokenRequest request, String mobileNumber) {
+        log.debug("Attempting token refresh for mobile number: {}", mobileNumber);
+        
+        User user = userRepository.findByMobileNumber(mobileNumber)
+                .orElseThrow(() -> {
+                    log.warn("User not found for mobile number: {}", mobileNumber);
+                    return new InvalidCredentialsException("Invalid token");
+                });
+
+        if (user.getStatus() != User.Status.ACTIVE) {
+            log.warn("User account not active: mobileNumber={}, status={}", 
+                    mobileNumber, user.getStatus());
+            throw new UserInactiveException("Account is not active. Please contact administrator.");
+        }
+
+        if (user.getRole() != User.Role.ADMIN) {
+            log.warn("User does not have ADMIN role: mobileNumber={}, role={}", 
+                    mobileNumber, user.getRole());
+            throw new InvalidCredentialsException("Access denied. Admin role required.");
+        }
+
+        log.debug("Generating new JWT token for user: {}", mobileNumber);
+        String token = jwtService.generateToken(user);
+
+        log.debug("Token refresh successful for user: {}", mobileNumber);
         return LoginResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")

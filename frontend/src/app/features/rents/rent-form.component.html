@@ -45,7 +45,7 @@
         </div>
       }
 
-      <form [formGroup]="getCurrentForm()" (ngSubmit)="onSubmit()">
+      <form [formGroup]="getCurrentForm()" (ngSubmit)="onSubmit()" id="rent-form">
         <!-- Single Month Rent Mode -->
         @if (mode() === 'single') {
           <div class="form-section">
