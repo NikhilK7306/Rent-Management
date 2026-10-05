@@ -241,7 +241,7 @@ public class PaymentRepositoryCustomImpl implements PaymentRepositoryCustom {
                     .rentMonth(month)
                     .rentYear(year)
                     .rentPeriod(period)
-                    .paymentDate((LocalDate) row[6])
+                    .paymentDate(((java.sql.Date) row[6]).toLocalDate())
                     .amount((BigDecimal) row[7])
                     .paymentMethod((String) row[8])
                     .status((String) row[9])

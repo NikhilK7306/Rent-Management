@@ -287,7 +287,7 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
                     .paidAmount(paidAmount)
                     .outstandingAmount(outstanding)
                     .status((String) row[9])
-                    .dueDate((LocalDate) row[10])
+                    .dueDate(((java.sql.Date) row[10]).toLocalDate())
                     .build());
         }
 

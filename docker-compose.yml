@@ -30,7 +30,7 @@ services:
       DB_NAME: ${POSTGRES_DB:-rentdb}
       DB_USERNAME: ${POSTGRES_USER:-rentuser}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-rentpass}
-      JWT_SECRET: dev-secret-key-min-256-bits-for-hmac-sha256-change-in-production
+      JWT_SECRET: dev-secret-key-exactly-64-bytes-for-hmac-sha512-alg-123456
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       SERVER_PORT: 8080
       SPRING_PROFILES_ACTIVE: docker
