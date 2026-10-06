@@ -10,6 +10,7 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./features/layout/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     canActivate: [() => import('./core/guards/auth.guard').then(m => m.authGuard)],
+    canActivateChild: [() => import('./core/guards/admin.guard').then(m => m.adminGuard)],
     children: [
       {
         path: '',
@@ -43,6 +44,31 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent)
+      }
+    ]
+  },
+  {
+    path: 'tenant',
+    loadComponent: () => import('./features/layout/tenant-layout/tenant-layout.component').then(m => m.TenantLayoutComponent),
+    canActivate: [() => import('./core/guards/auth.guard').then(m => m.authGuard)],
+    canActivateChild: [() => import('./core/guards/tenant.guard').then(m => m.tenantGuard)],
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/tenant/dashboard/tenant-dashboard.component').then(m => m.TenantDashboardComponent)
+      },
+      {
+        path: 'rents',
+        loadComponent: () => import('./features/tenant/rents/tenant-rents.component').then(m => m.TenantRentsComponent)
+      },
+      {
+        path: 'payments',
+        loadComponent: () => import('./features/tenant/payments/tenant-payments.component').then(m => m.TenantPaymentsComponent)
       }
     ]
   },

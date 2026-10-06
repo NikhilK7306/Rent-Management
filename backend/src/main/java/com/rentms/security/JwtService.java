@@ -62,7 +62,7 @@ public class JwtService {
                 .claim("generationId", generationProvider.getGenerationId())
                 .issuedAt(now)
                 .expiration(expiry)
-                .signWith(secretKey)
+                .signWith(secretKey, Jwts.SIG.HS512)
                 .compact();
     }
 

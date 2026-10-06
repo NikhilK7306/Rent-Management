@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { PaymentService } from '@core/services/payment.service';
 import { RentService } from '@core/services/rent.service';
 import { Payment, PaymentPage, PaymentStatus, PaymentMethod, PAYMENT_STATUSES, PAYMENT_METHODS, PAYMENT_STATUS_COLORS, PAYMENT_METHOD_COLORS } from '@core/models/payment.model';
@@ -23,6 +23,7 @@ export class PaymentListComponent implements OnInit {
   private paymentService = inject(PaymentService);
   private rentService = inject(RentService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private toastService = inject(ToastService);
 
   payments = signal<Payment[]>([]);
@@ -72,6 +73,15 @@ export class PaymentListComponent implements OnInit {
   ngOnInit(): void {
     this.loadPayments();
     this.loadAvailableRents();
+    this.handleQueryParams();
+  }
+
+  handleQueryParams(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['add'] === 'true') {
+        this.showAddModal.set(true);
+      }
+    });
   }
 
   loadPayments(): void {

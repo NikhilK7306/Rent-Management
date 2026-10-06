@@ -21,3 +21,5 @@ databaseChangeLog:
       file: classpath:db/changelog/v1.6.0/create-notifications-table.yaml
   - include:
       file: classpath:db/changelog/v1.7.0/create-application-settings-table.yaml
+  - include:
+      file: classpath:db/changelog/v1.8.0/seed-tenant-data.yaml

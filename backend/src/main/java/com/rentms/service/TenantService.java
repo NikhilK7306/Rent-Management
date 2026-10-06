@@ -19,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +29,46 @@ public class TenantService {
     private final TenantRepository tenantRepository;
     private final PropertyRepository propertyRepository;
     private final RentService rentService;
+
+    @Transactional(readOnly = true)
+    public Optional<Tenant> findByMobileNumber(String mobileNumber) {
+        return tenantRepository.findByMobileNumber(mobileNumber);
+    }
+
+    @Transactional(readOnly = true)
+    public com.rentms.dto.tenantauth.TenantMeResponse getTenantMeByMobileNumber(String mobileNumber) {
+        log.debug("Fetching tenant me for mobile number: {}", mobileNumber);
+        Tenant tenant = tenantRepository.findByMobileNumber(mobileNumber)
+                .orElseThrow(() -> new com.rentms.exception.TenantNotFoundException("Tenant not found for mobile number: " + mobileNumber));
+        return buildTenantMeResponse(tenant);
+    }
+
+    private com.rentms.dto.tenantauth.TenantMeResponse buildTenantMeResponse(Tenant tenant) {
+        com.rentms.dto.tenantauth.TenantMeResponse.PropertyInfo propertyInfo = null;
+        if (tenant.getPropertyId() != null) {
+            Property property = propertyRepository.findById(tenant.getPropertyId()).orElse(null);
+            if (property != null) {
+                propertyInfo = com.rentms.dto.tenantauth.TenantMeResponse.PropertyInfo.builder()
+                        .id(property.getId())
+                        .propertyCode(property.getPropertyCode())
+                        .propertyName(property.getPropertyName())
+                        .propertyType(property.getPropertyType().name())
+                        .address(property.getAddress())
+                        .monthlyRent(property.getMonthlyRent() != null ? property.getMonthlyRent().toString() : null)
+                        .build();
+            }
+        }
+
+        return com.rentms.dto.tenantauth.TenantMeResponse.builder()
+                .id(tenant.getId())
+                .fullName(tenant.getFullName())
+                .mobileNumber(tenant.getMobileNumber())
+                .email(tenant.getEmail())
+                .address(tenant.getAddress())
+                .status(tenant.getStatus())
+                .property(propertyInfo)
+                .build();
+    }
 
     @Transactional
     public TenantResponse createTenant(TenantRequest request) {

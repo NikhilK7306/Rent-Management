@@ -19,6 +19,8 @@ public interface RentRepositoryCustom {
 
     long countByStatusAndFilters(Rent.Status status, Long tenantId, Long propertyId, Integer month, Integer year, LocalDate fromDate, LocalDate toDate);
 
+    long countUpcomingRents(LocalDate fromDate, LocalDate toDate);
+
     List<RentReportResponse.MonthlyRentOverview> getMonthlyRentOverview(Integer year);
 
     Page<RentReportResponse.RentReportItem> getRentReport(RentReportRequest request, Pageable pageable);

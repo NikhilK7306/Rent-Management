@@ -9,12 +9,14 @@ export interface LoginResponse {
   user: UserDto;
 }
 
+export type UserRole = 'ADMIN' | 'TENANT';
+
 export interface UserDto {
   id: number;
   name: string;
   mobileNumber: string;
   email: string;
-  role: 'ADMIN';
+  role: UserRole;
 }
 
 export interface AuthState {

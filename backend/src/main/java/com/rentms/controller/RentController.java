@@ -85,4 +85,11 @@ public class RentController {
         RentResponse response = rentService.updateRentStatus(id, request);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRent(@PathVariable Long id) {
+        log.info("DELETE /api/admin/rents/{} - Delete rent request received", id);
+        rentService.deleteRent(id);
+        return ResponseEntity.noContent().build();
+    }
 }

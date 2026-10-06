@@ -28,7 +28,7 @@
   } @else if (summaryData) {
     <!-- Summary Cards Grid -->
     <div class="summary-grid grid grid-4">
-      <div class="card summary-card">
+      <a [routerLink]="['/properties']" class="card summary-card clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon properties">
@@ -43,9 +43,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="card summary-card">
+      <a [routerLink]="['/properties']" [queryParams]="{status: 'OCCUPIED'}" class="card summary-card clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon occupied">
@@ -61,9 +61,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="card summary-card">
+      <a [routerLink]="['/properties']" [queryParams]="{status: 'VACANT'}" class="card summary-card clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon vacant">
@@ -80,9 +80,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="card summary-card">
+      <a [routerLink]="['/tenants']" class="card summary-card clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon tenants">
@@ -97,9 +97,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="card summary-card highlight">
+      <a [routerLink]="['/rents']" class="card summary-card highlight clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon rent-due">
@@ -114,9 +114,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="card summary-card highlight">
+      <a [routerLink]="['/payments']" class="card summary-card highlight clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon rent-collected">
@@ -132,9 +132,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="card summary-card warning">
+      <a [routerLink]="['/rents']" [queryParams]="{outstanding: 'true'}" class="card summary-card warning clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon outstanding">
@@ -150,9 +150,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="card summary-card">
+      <a [routerLink]="['/rents']" [queryParams]="{overdue: 'false'}" class="card summary-card clickable">
         <div class="card-body">
           <div class="summary-item">
             <div class="summary-icon pending">
@@ -168,71 +168,69 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
     </div>
 
-    <!-- Notification Summary / Rent Alerts -->
-    @if (summaryData.notificationSummary) {
-      <div class="card alert-summary-card">
-        <div class="card-header">
-          <h2 class="card-title">Rent Alerts</h2>
-        </div>
-        <div class="card-body">
-          <div class="alert-grid grid grid-4">
-            <div class="alert-item high" [attr.data-cy]="'overdue-alert'">
-              <div class="alert-icon overdue">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-              </div>
-              <div class="alert-info">
-                <span class="alert-count">{{ summaryData.notificationSummary.overdueCount }}</span>
-                <span class="alert-label">Overdue</span>
-              </div>
+    <!-- Rent Alerts (based on actual rent data) -->
+    <div class="card alert-summary-card">
+      <div class="card-header">
+        <h2 class="card-title">Rent Alerts</h2>
+      </div>
+      <div class="card-body">
+        <div class="alert-grid grid grid-4">
+          <a [routerLink]="['/rents']" [queryParams]="{overdue: 'true'}" class="alert-item high" [attr.data-cy]="'overdue-alert'">
+            <div class="alert-icon overdue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
             </div>
-            <div class="alert-item medium" [attr.data-cy]="'pending-alert'">
-              <div class="alert-icon pending">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-              </div>
-              <div class="alert-info">
-                <span class="alert-count">{{ summaryData.notificationSummary.pendingCount }}</span>
-                <span class="alert-label">Pending</span>
-              </div>
+            <div class="alert-info">
+              <span class="alert-count">{{ summaryData.overdueRents }}</span>
+              <span class="alert-label">Overdue</span>
             </div>
-            <div class="alert-item medium" [attr.data-cy]="'partial-alert'">
-              <div class="alert-icon partial">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                </svg>
-              </div>
-              <div class="alert-info">
-                <span class="alert-count">{{ summaryData.notificationSummary.partialCount }}</span>
-                <span class="alert-label">Partial</span>
-              </div>
+          </a>
+          <a [routerLink]="['/rents']" [queryParams]="{overdue: 'false'}" class="alert-item medium" [attr.data-cy]="'pending-alert'">
+            <div class="alert-icon pending">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
             </div>
-            <div class="alert-item low" [attr.data-cy]="'upcoming-alert'">
-              <div class="alert-icon upcoming">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-              </div>
-              <div class="alert-info">
-                <span class="alert-count">{{ summaryData.notificationSummary.upcomingCount }}</span>
-                <span class="alert-label">Upcoming</span>
-              </div>
+            <div class="alert-info">
+              <span class="alert-count">{{ summaryData.pendingRents }}</span>
+              <span class="alert-label">Pending</span>
             </div>
-          </div>
+          </a>
+          <a [routerLink]="['/rents']" [queryParams]="{status: 'PARTIAL'}" class="alert-item medium" [attr.data-cy]="'partial-alert'">
+            <div class="alert-icon partial">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <div class="alert-info">
+              <span class="alert-count">{{ summaryData.partialRents }}</span>
+              <span class="alert-label">Partial</span>
+            </div>
+          </a>
+          <a [routerLink]="['/rents']" [queryParams]="{dueSoon: 'true'}" class="alert-item low" [attr.data-cy]="'upcoming-alert'">
+            <div class="alert-icon upcoming">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="alert-info">
+              <span class="alert-count">{{ summaryData.upcomingRents }}</span>
+              <span class="alert-label">Upcoming</span>
+            </div>
+          </a>
         </div>
       </div>
-    }
+    </div>
 
     <!-- Rent Summary Section -->
     <div class="section-grid grid grid-2">
@@ -326,6 +324,7 @@
                   <th>Paid</th>
                   <th>Partial</th>
                   <th>Pending</th>
+                  <th>Overdue</th>
                 </tr>
               </thead>
               <tbody>
@@ -338,6 +337,7 @@
                     <td><span class="status-badge paid">{{ month.paidCount }}</span></td>
                     <td><span class="status-badge partial">{{ month.partialCount }}</span></td>
                     <td><span class="status-badge pending">{{ month.pendingCount }}</span></td>
+                    <td><span class="status-badge overdue">{{ month.overdueCount }}</span></td>
                   </tr>
                 }
               </tbody>
@@ -354,7 +354,7 @@
       </div>
       <div class="card-body">
         <div class="actions-grid grid grid-4">
-          <a routerLink="/tenants" class="action-btn" [attr.data-cy]="'add-tenant-btn'">
+          <a [routerLink]="['/tenants']" [queryParams]="{add: 'true'}" class="action-btn" [attr.data-cy]="'add-tenant-btn'">
             <div class="action-icon tenants">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -364,7 +364,7 @@
             </div>
             <span>Add Tenant</span>
           </a>
-          <a routerLink="/properties" class="action-btn" [attr.data-cy]="'add-property-btn'">
+          <a [routerLink]="['/properties']" [queryParams]="{add: 'true'}" class="action-btn" [attr.data-cy]="'add-property-btn'">
             <div class="action-icon properties">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -375,7 +375,7 @@
             </div>
             <span>Add Property</span>
           </a>
-          <a routerLink="/rents" class="action-btn" [attr.data-cy]="'add-rent-btn'">
+          <a [routerLink]="['/rents']" [queryParams]="{add: 'true'}" class="action-btn" [attr.data-cy]="'add-rent-btn'">
             <div class="action-icon rent">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -385,7 +385,7 @@
             </div>
             <span>Add Rent</span>
           </a>
-          <a routerLink="/payments" class="action-btn" [attr.data-cy]="'record-payment-btn'">
+          <a [routerLink]="['/payments']" [queryParams]="{add: 'true'}" class="action-btn" [attr.data-cy]="'record-payment-btn'">
             <div class="action-icon payments">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="1" y="4" width="22" height="16" rx="2"></rect>

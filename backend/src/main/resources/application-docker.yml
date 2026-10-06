@@ -11,7 +11,7 @@ spring:
         enabled: false
 
 jwt:
-  secret: ${JWT_SECRET:dev-secret-key-min-256-bits-for-hmac-sha256-change-in-production}
+  secret: ${JWT_SECRET:dev-secret-key-min-512-bits-for-hmac-sha512-change-in-production-must-be-at-least-64-chars}
   expiration: ${JWT_EXPIRATION:86400000}
 
 logging:

@@ -82,7 +82,7 @@ public class PaymentService {
                 .amount(request.getAmount())
                 .paymentDate(request.getPaymentDate())
                 .paymentMethod(convertToEntityPaymentMethod(request.getPaymentMethod()))
-                .referenceNumber(request.getReferenceNumber() != null ? request.getReferenceNumber().trim() : null)
+                .referenceNumber(request.getReferenceNumber() != null && !request.getReferenceNumber().trim().isEmpty() ? request.getReferenceNumber().trim() : null)
                 .notes(request.getNotes())
                 .status(calculatePaymentStatus(request.getAmount(), outstanding))
                 .build();
@@ -184,7 +184,7 @@ public class PaymentService {
         payment.setAmount(request.getAmount());
         payment.setPaymentDate(request.getPaymentDate());
         payment.setPaymentMethod(convertToEntityPaymentMethod(request.getPaymentMethod()));
-        payment.setReferenceNumber(request.getReferenceNumber() != null ? request.getReferenceNumber().trim() : null);
+        payment.setReferenceNumber(request.getReferenceNumber() != null && !request.getReferenceNumber().trim().isEmpty() ? request.getReferenceNumber().trim() : null);
         payment.setNotes(request.getNotes());
         payment.setStatus(calculatePaymentStatus(request.getAmount(), outstanding));
 

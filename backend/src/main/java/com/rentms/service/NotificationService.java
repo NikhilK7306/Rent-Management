@@ -58,9 +58,36 @@ public class NotificationService {
         return notificationRepository.countUnread();
     }
 
-    @Transactional(readOnly = true)
+@Transactional(readOnly = true)
     public long getUnreadCountByTenant(Long tenantId) {
         return notificationRepository.countUnreadByTenant(tenantId);
+    }
+
+    @Transactional(readOnly = true)
+    public long getUnreadCountForTenant(String mobileNumber) {
+        return notificationRepository.countUnreadByTenantMobileNumber(mobileNumber);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NotificationResponse> getNotificationsForTenant(String mobileNumber, Pageable pageable) {
+        return notificationRepository.findByTenantMobileNumberOrderByCreatedAtDesc(mobileNumber, pageable).map(NotificationResponse::from);
+    }
+
+    @Transactional
+    public NotificationResponse markAsReadForTenant(Long id, String mobileNumber) {
+        Notification notification = notificationRepository.findByIdAndTenantMobileNumber(id, mobileNumber)
+                .orElseThrow(() -> new NotificationNotFoundException("Notification not found with id: " + id));
+
+        notification.setRead(true);
+        Notification saved = notificationRepository.save(notification);
+        log.info("Notification marked as read for tenant: {}", mobileNumber);
+        return NotificationResponse.from(saved);
+    }
+
+@Transactional
+    public void markAllAsReadForTenant(String mobileNumber) {
+        notificationRepository.markAllAsReadForTenant(mobileNumber);
+        log.info("All notifications marked as read for tenant: {}", mobileNumber);
     }
 
     @Transactional

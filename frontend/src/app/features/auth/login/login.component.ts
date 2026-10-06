@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '@core/services/auth.service';
-import { LoginRequest } from '@core/models/auth.model';
+import { LoginRequest, UserRole } from '@core/models/auth.model';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -30,7 +30,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     if (this.authService.isAuthenticated) {
-      this.router.navigate(['/dashboard']);
+      this.redirectBasedOnRole();
     }
   }
 
@@ -64,7 +64,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(credentials).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.redirectBasedOnRole();
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;
@@ -82,5 +82,14 @@ export class LoginComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private redirectBasedOnRole(): void {
+    const role = this.authService.currentUser?.role;
+    if (role === 'TENANT') {
+      this.router.navigate(['/tenant/dashboard']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
   }
 }

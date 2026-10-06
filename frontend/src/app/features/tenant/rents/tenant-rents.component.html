@@ -1,0 +1,138 @@
+<div class="tenant-rents">
+  <div class="page-header">
+    <h1>My Rent History</h1>
+    <p class="page-subtitle">View all your rent records and payment status</p>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading rent records...</p>
+  </div>
+
+  <div *ngIf="errorMessage()" class="error-state">
+    <div class="error-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <h3>Unable to Load Rent Records</h3>
+    <p>{{ errorMessage() }}</p>
+    <button class="btn btn-primary" (click)="loadRents()">Retry</button>
+  </div>
+
+  <div *ngIf="!isLoading() && !errorMessage()" class="rents-content">
+    <div *ngIf="rents().length === 0" class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+      <h3>No Rent Records</h3>
+      <p>You don't have any rent records yet.</p>
+    </div>
+
+    <div *ngIf="rents().length > 0" class="table-container">
+      <table class="rents-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Monthly Rent</th>
+            <th>Due Date</th>
+            <th>Paid Amount</th>
+            <th>Outstanding</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rent of rents()">
+            <td>
+              <div class="month-cell">
+                <span class="month-name">{{ getMonthName(rent.rentMonth) }}</span>
+                <span class="month-year">{{ rent.rentYear }}</span>
+              </div>
+            </td>
+            <td>{{ formatCurrency(rent.monthlyRent) }}</td>
+            <td>{{ formatDate(rent.dueDate) }}</td>
+            <td class="paid-amount">{{ formatCurrency(rent.paidAmount) }}</td>
+            <td class="outstanding-amount">
+              {{ formatCurrency(
+                rent.monthlyRent && rent.paidAmount 
+                  ? (parseFloatVal(rent.monthlyRent) - parseFloatVal(rent.paidAmount)).toString() 
+                  : rent.monthlyRent
+              ) }}
+            </td>
+            <td>
+              <span class="status-badge" [class]="getStatusClass(rent.status)">
+                {{ rent.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages() > 1" class="pagination">
+      <button 
+        class="btn btn-secondary btn-sm" 
+        [disabled]="currentPage() === 0" 
+        (click)="onPageChange(0)"
+        aria-label="First page"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 18 11 12 17 6"></polyline>
+          <polyline points="11 18 5 12 11 6"></polyline>
+        </svg>
+      </button>
+      <button 
+        class="btn btn-secondary btn-sm" 
+        [disabled]="currentPage() === 0" 
+        (click)="onPageChange(currentPage() - 1)"
+        aria-label="Previous page"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <span class="pagination-pages">
+        <button 
+          *ngFor="let page of getDisplayedPages()" 
+          class="btn btn-sm" 
+          [class.btn-primary]="page === currentPage()" 
+          [class.btn-secondary]="page !== currentPage()" 
+          (click)="onPageChange(page)"
+        >
+          {{ page + 1 }}
+        </button>
+      </span>
+
+      <button 
+        class="btn btn-secondary btn-sm" 
+        [disabled]="currentPage() === totalPages() - 1" 
+        (click)="onPageChange(currentPage() + 1)"
+        aria-label="Next page"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+      <button 
+        class="btn btn-secondary btn-sm" 
+        [disabled]="currentPage() === totalPages() - 1" 
+        (click)="onPageChange(totalPages() - 1)"
+        aria-label="Last page"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="7 18 13 12 7 6"></polyline>
+          <polyline points="13 18 19 12 13 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <div class="pagination-info">
+      Showing {{ rents().length }} of {{ totalElements() }} records
+    </div>
+  </div>
+</div>

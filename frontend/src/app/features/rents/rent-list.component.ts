@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, input, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { RentService } from '@core/services/rent.service';
 import { TenantService } from '@core/services/tenant.service';
 import { PropertyService } from '@core/services/property.service';
@@ -23,6 +23,7 @@ import { ToastService } from '@core/services/notification/toast.service';
 export class RentListComponent implements OnInit {
   private rentService = inject(RentService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   rents = signal<Rent[]>([]);
   isLoading = signal(false);
@@ -52,6 +53,36 @@ export class RentListComponent implements OnInit {
   ngOnInit(): void {
     this.loadRents();
     this.loadCurrentMonthYear();
+    this.handleQueryParams();
+  }
+
+  handleQueryParams(): void {
+    this.route.queryParams.subscribe(params => {
+      // Handle add modal
+      if (params['add'] === 'true') {
+        this.openAddModal();
+      }
+
+      // Handle filters from Rent Alerts clicks
+      if (params['overdue'] === 'true') {
+        this.overdueFilter.set('true');
+        this.loadRents();
+      } else if (params['overdue'] === 'false') {
+        this.overdueFilter.set('false');
+        this.loadRents();
+      }
+
+      if (params['status']) {
+        this.statusFilter.set(params['status']);
+        this.loadRents();
+      }
+
+      if (params['dueSoon'] === 'true') {
+        // For due soon, we can set a date range filter
+        // This would need backend support or we can filter on frontend
+        // For now, we'll just load with current month/year and let user filter
+      }
+    });
   }
 
   loadCurrentMonthYear(): void {
@@ -238,5 +269,37 @@ export class RentListComponent implements OnInit {
 
   canRecordPayment(rent: any): boolean {
     return rent.status !== 'PAID';
+  }
+
+  confirmDeleteRent(rent: any): void {
+    const hasPayments = rent.payments && rent.payments.length > 0;
+    const isPaid = rent.status === 'PAID';
+    
+    if (hasPayments) {
+      alert('This rent cannot be removed because payments have already been recorded for it.');
+      return;
+    }
+    
+    if (isPaid) {
+      alert('This rent cannot be removed because it is fully paid.');
+      return;
+    }
+    
+    const message = `Are you sure you want to remove this rent record?\n\nTenant: ${rent.tenant?.fullName}\nProperty: ${rent.property?.propertyName}\nPeriod: ${this.getMonthName(rent.rentMonth)} ${rent.rentYear}\nRent Amount: ${this.formatCurrency(rent.monthlyRent)}`;
+    
+    if (confirm(message)) {
+      this.deleteRent(rent.id);
+    }
+  }
+
+  deleteRent(rentId: number): void {
+    this.rentService.deleteRent(rentId).subscribe({
+      next: () => {
+        this.loadRents();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errorMessage.set(err.error?.message || 'Failed to delete rent record.');
+      }
+    });
   }
 }

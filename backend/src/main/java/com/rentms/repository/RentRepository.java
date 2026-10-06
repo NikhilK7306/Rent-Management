@@ -36,6 +36,9 @@ public interface RentRepository extends JpaRepository<Rent, Long>, RentRepositor
     @Query("SELECT r FROM Rent r WHERE r.status = :status")
     List<Rent> findByStatus(@Param("status") Rent.Status status);
 
+    @Query("SELECT r FROM Rent r WHERE r.tenant.mobileNumber = :mobileNumber ORDER BY r.rentYear DESC, r.rentMonth DESC")
+    Page<Rent> findByTenantMobileNumber(@Param("mobileNumber") String mobileNumber, Pageable pageable);
+
     @Query("SELECT r.tenant.id, r.tenant.fullName, COUNT(r), SUM(r.monthlyRent - COALESCE(r.paidAmount, 0)) " +
            "FROM Rent r WHERE r.status IN (:statuses) GROUP BY r.tenant.id, r.tenant.fullName HAVING SUM(r.monthlyRent - COALESCE(r.paidAmount, 0)) > 0")
     List<Object[]> getAggregatedOutstandingByTenant(@Param("statuses") List<Rent.Status> statuses);

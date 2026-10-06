@@ -20,6 +20,9 @@ export interface DashboardSummaryResponse {
   totalRentCollected: number;
   totalOutstanding: number;
   pendingRents: number;
+  overdueRents: number;
+  upcomingRents: number;
+  partialRents: number;
   rentSummary: RentSummary;
   paymentSummary: PaymentSummary;
   monthlyRentOverview: MonthlyRentOverview[];
@@ -68,4 +71,5 @@ export interface MonthlyRentOverview {
   paidCount: number;
   partialCount: number;
   pendingCount: number;
+  overdueCount: number;
 }

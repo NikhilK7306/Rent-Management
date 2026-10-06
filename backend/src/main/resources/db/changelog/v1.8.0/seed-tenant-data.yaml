@@ -1,0 +1,207 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rentms
+      comment: Insert development properties for tenant testing (DEVELOPMENT ONLY - remove for production)
+      context: dev,docker
+      validCheckSum: ANY
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: "0"
+            sql: "SELECT COUNT(*) FROM properties WHERE property_code IN ('PROP-001', 'PROP-002')"
+      changes:
+        - insert:
+            tableName: properties
+            columns:
+              - column:
+                  name: property_name
+                  value: "Test Property 1"
+              - column:
+                  name: property_code
+                  value: "PROP-001"
+              - column:
+                  name: property_type
+                  value: "HOUSE"
+              - column:
+                  name: address
+                  value: "123 Main Street, Mumbai, Maharashtra 400001"
+              - column:
+                  name: description
+                  value: "Test property for tenant 1"
+              - column:
+                  name: monthly_rent
+                  value: "25000.00"
+              - column:
+                  name: status
+                  value: "ACTIVE"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+        - insert:
+            tableName: properties
+            columns:
+              - column:
+                  name: property_name
+                  value: "Test Property 2"
+              - column:
+                  name: property_code
+                  value: "PROP-002"
+              - column:
+                  name: property_type
+                  value: "APARTMENT"
+              - column:
+                  name: address
+                  value: "456 Park Avenue, Delhi, Delhi 110001"
+              - column:
+                  name: description
+                  value: "Test property for tenant 2"
+              - column:
+                  name: monthly_rent
+                  value: "30000.00"
+              - column:
+                  name: status
+                  value: "ACTIVE"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+
+  - changeSet:
+      id: 2
+      author: rentms
+      comment: Insert development tenant users (DEVELOPMENT ONLY - remove for production)
+      context: dev,docker
+      validCheckSum: ANY
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: "0"
+            sql: "SELECT COUNT(*) FROM users WHERE mobile_number IN ('9123456789', '9123456790')"
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: name
+                  value: "John Tenant"
+              - column:
+                  name: mobile_number
+                  value: "9123456789"
+              - column:
+                  name: email
+                  value: "john.tenant@rentms.local"
+              - column:
+                  name: password_hash
+                  value: "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.PZvO.S"
+              - column:
+                  name: role
+                  value: "TENANT"
+              - column:
+                  name: status
+                  value: "ACTIVE"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: name
+                  value: "Jane Tenant"
+              - column:
+                  name: mobile_number
+                  value: "9123456790"
+              - column:
+                  name: email
+                  value: "jane.tenant@rentms.local"
+              - column:
+                  name: password_hash
+                  value: "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.PZvO.S"
+              - column:
+                  name: role
+                  value: "TENANT"
+              - column:
+                  name: status
+                  value: "ACTIVE"
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+
+  - changeSet:
+      id: 3
+      author: rentms
+      comment: Insert development tenant records (DEVELOPMENT ONLY - remove for production)
+      context: dev,docker
+      validCheckSum: ANY
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: "0"
+            sql: "SELECT COUNT(*) FROM tenants WHERE mobile_number IN ('9123456789', '9123456790')"
+      changes:
+        - insert:
+            tableName: tenants
+            columns:
+              - column:
+                  name: full_name
+                  value: "John Tenant"
+              - column:
+                  name: mobile_number
+                  value: "9123456789"
+              - column:
+                  name: email
+                  value: "john.tenant@rentms.local"
+              - column:
+                  name: address
+                  value: "123 Main Street, Apartment 4B, Mumbai, Maharashtra 400001"
+              - column:
+                  name: status
+                  value: "ACTIVE"
+              - column:
+                  name: property_id
+                  value: 1
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"
+        - insert:
+            tableName: tenants
+            columns:
+              - column:
+                  name: full_name
+                  value: "Jane Tenant"
+              - column:
+                  name: mobile_number
+                  value: "9123456790"
+              - column:
+                  name: email
+                  value: "jane.tenant@rentms.local"
+              - column:
+                  name: address
+                  value: "456 Park Avenue, Flat 12C, Delhi, Delhi 110001"
+              - column:
+                  name: status
+                  value: "ACTIVE"
+              - column:
+                  name: property_id
+                  value: 2
+              - column:
+                  name: created_at
+                  valueDate: "2024-01-01 00:00:00"
+              - column:
+                  name: updated_at
+                  valueDate: "2024-01-01 00:00:00"

@@ -52,4 +52,8 @@ export class RentService {
   updateRentStatus(id: number, status: RentStatusRequest): Observable<any> {
     return this.http.patch(`${this.baseUrl}/${id}/status`, status);
   }
+
+  deleteRent(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
 }

@@ -43,31 +43,40 @@ public class DashboardService {
         long vacantProperties = totalProperties - occupiedProperties;
         long activeTenants = tenantRepository.countByStatus(Tenant.Status.ACTIVE);
 
-        // Rent summary (current month by default)
+        // Main summary: ALL rent records (not filtered by month)
+        BigDecimal totalRentDue = rentRepository.sumMonthlyRentByFilters(null, null, null, null, null, null);
+        BigDecimal totalRentCollected = rentRepository.sumPaidAmountByFilters(null, null, null, null, null, null);
+        BigDecimal totalOutstanding = totalRentDue.subtract(totalRentCollected);
+
+        long pendingRents = rentRepository.countByStatusAndFilters(Rent.Status.PENDING, null, null, null, null, null, null);
+        long overdueRents = rentRepository.countByStatusAndFilters(Rent.Status.OVERDUE, null, null, null, null, null, null);
+        long paidCount = rentRepository.countByStatusAndFilters(Rent.Status.PAID, null, null, null, null, null, null);
+        long partialCount = rentRepository.countByStatusAndFilters(Rent.Status.PARTIAL, null, null, null, null, null, null);
+
+        // Rent summary (Current Month only)
         LocalDate now = LocalDate.now();
         int currentMonth = now.getMonthValue();
         int currentYear = now.getYear();
 
-        BigDecimal totalRentDue = rentRepository.sumMonthlyRentByFilters(null, null, currentMonth, currentYear, null, null);
-        BigDecimal totalRentCollected = rentRepository.sumPaidAmountByFilters(null, null, currentMonth, currentYear, null, null);
-        BigDecimal totalOutstanding = totalRentDue.subtract(totalRentCollected);
+        BigDecimal currentMonthRentDue = rentRepository.sumMonthlyRentByFilters(null, null, currentMonth, currentYear, null, null);
+        BigDecimal currentMonthRentCollected = rentRepository.sumPaidAmountByFilters(null, null, currentMonth, currentYear, null, null);
+        BigDecimal currentMonthOutstanding = currentMonthRentDue.subtract(currentMonthRentCollected);
 
-        long pendingRents = rentRepository.countByStatusAndFilters(Rent.Status.PENDING, null, null, currentMonth, currentYear, null, null) +
+        long currentMonthPendingRents = rentRepository.countByStatusAndFilters(Rent.Status.PENDING, null, null, currentMonth, currentYear, null, null) +
                 rentRepository.countByStatusAndFilters(Rent.Status.OVERDUE, null, null, currentMonth, currentYear, null, null);
 
-        // Rent summary details
-        long paidCount = rentRepository.countByStatusAndFilters(Rent.Status.PAID, null, null, currentMonth, currentYear, null, null);
-        long partialCount = rentRepository.countByStatusAndFilters(Rent.Status.PARTIAL, null, null, currentMonth, currentYear, null, null);
+        long currentMonthPaidCount = rentRepository.countByStatusAndFilters(Rent.Status.PAID, null, null, currentMonth, currentYear, null, null);
+        long currentMonthPartialCount = rentRepository.countByStatusAndFilters(Rent.Status.PARTIAL, null, null, currentMonth, currentYear, null, null);
 
         DashboardSummaryResponse.RentSummary rentSummary = DashboardSummaryResponse.RentSummary.builder()
-                .totalRent(totalRentDue)
-                .paidRent(totalRentCollected)
+                .totalRent(currentMonthRentDue)
+                .paidRent(currentMonthRentCollected)
                 .partiallyPaidRent(BigDecimal.ZERO)
                 .pendingRent(BigDecimal.ZERO)
-                .outstandingAmount(totalOutstanding)
+                .outstandingAmount(currentMonthOutstanding)
                 .build();
 
-        // Payment summary
+        // Payment summary (Current Month)
         BigDecimal totalPaymentsAmount = paymentRepository.sumAmountByFilters(null, null, currentMonth, currentYear, null, null);
         long completedPayments = paymentRepository.countByStatus(com.rentms.entity.Payment.Status.PAID);
         long partialPayments = paymentRepository.countByStatus(com.rentms.entity.Payment.Status.PARTIAL);
@@ -88,7 +97,7 @@ public class DashboardService {
                 .paymentMethodBreakdown(paymentMethodBreakdown)
                 .build();
 
-        // Monthly rent overview (last 12 months)
+        // Monthly rent overview (last 12 months) with correct pending/overdue split
         List<DashboardSummaryResponse.MonthlyRentOverview> monthlyOverview = new ArrayList<>();
         for (int i = 11; i >= 0; i--) {
             YearMonth ym = YearMonth.from(now).minusMonths(i);
@@ -106,8 +115,17 @@ public class DashboardService {
                             .paidCount(m.getPaidCount())
                             .partialCount(m.getPartialCount())
                             .pendingCount(m.getPendingCount())
+                            .overdueCount(m.getOverdueCount())
                             .build()));
         }
+
+        // Calculate rent alerts from actual rent data (not notifications)
+        long overdueRentsAlert = rentRepository.countByStatusAndFilters(Rent.Status.OVERDUE, null, null, null, null, null, null);
+        long pendingRentsAll = rentRepository.countByStatusAndFilters(Rent.Status.PENDING, null, null, null, null, null, null);
+        // Upcoming: PENDING rents with due date in next 7 days
+        LocalDate today = LocalDate.now();
+        LocalDate nextWeek = today.plusDays(7);
+        long upcomingRents = rentRepository.countUpcomingRents(today, nextWeek);
 
         return DashboardSummaryResponse.builder()
                 .message("Welcome, " + user.getName())
@@ -121,6 +139,9 @@ public class DashboardService {
                 .totalRentCollected(totalRentCollected)
                 .totalOutstanding(totalOutstanding)
                 .pendingRents(pendingRents)
+                .overdueRents(overdueRents)
+                .upcomingRents(upcomingRents)
+                .partialRents(partialCount)
                 .rentSummary(rentSummary)
                 .paymentSummary(paymentSummary)
                 .monthlyRentOverview(monthlyOverview)

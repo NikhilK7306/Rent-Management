@@ -52,6 +52,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("UPDATE Notification n SET n.isRead = true")
     int markAllAsRead();
 
-    @Query("SELECT n FROM Notification n WHERE n.referenceKey = :referenceKey")
-    Optional<Notification> findByReferenceKeyNative(@Param("referenceKey") String referenceKey);
+    @Query("UPDATE Notification n SET n.isRead = true WHERE n.tenant.mobileNumber = :mobileNumber")
+    int markAllAsReadForTenant(@Param("mobileNumber") String mobileNumber);
+
+    @Query("SELECT n FROM Notification n WHERE n.tenant.mobileNumber = :mobileNumber ORDER BY n.createdAt DESC")
+    Page<Notification> findByTenantMobileNumberOrderByCreatedAtDesc(@Param("mobileNumber") String mobileNumber, Pageable pageable);
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.tenant.mobileNumber = :mobileNumber AND n.isRead = false")
+    long countUnreadByTenantMobileNumber(@Param("mobileNumber") String mobileNumber);
+
+    Optional<Notification> findByIdAndTenantMobileNumber(@Param("id") Long id, @Param("mobileNumber") String mobileNumber);
 }

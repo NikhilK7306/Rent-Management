@@ -25,6 +25,9 @@ public class DashboardSummaryResponse {
     private BigDecimal totalRentCollected;
     private BigDecimal totalOutstanding;
     private long pendingRents;
+    private long overdueRents;
+    private long upcomingRents;
+    private long partialRents;
 
     private RentSummary rentSummary;
     private PaymentSummary paymentSummary;
@@ -79,5 +82,6 @@ public class DashboardSummaryResponse {
         private long paidCount;
         private long partialCount;
         private long pendingCount;
+        private long overdueCount;
     }
 }

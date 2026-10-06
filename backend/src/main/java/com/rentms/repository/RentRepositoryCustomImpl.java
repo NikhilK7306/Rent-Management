@@ -6,6 +6,7 @@ import com.rentms.entity.Rent;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class RentRepositoryCustomImpl implements RentRepositoryCustom {
 
     private final EntityManager entityManager;
@@ -179,7 +181,8 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
                 COALESCE(SUM(r.paid_amount), 0) as collected,
                 COUNT(CASE WHEN r.status = 'PAID' THEN 1 END) as paid_count,
                 COUNT(CASE WHEN r.status = 'PARTIAL' THEN 1 END) as partial_count,
-                COUNT(CASE WHEN r.status IN ('PENDING', 'OVERDUE') THEN 1 END) as pending_count
+                COUNT(CASE WHEN r.status = 'PENDING' THEN 1 END) as pending_count,
+                COUNT(CASE WHEN r.status = 'OVERDUE' THEN 1 END) as overdue_count
             FROM rents r
             WHERE r.rent_year = ?
             GROUP BY r.rent_year, r.rent_month
@@ -192,6 +195,11 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
         @SuppressWarnings("unchecked")
         List<Object[]> results = query.getResultList();
 
+        log.debug("Monthly rent overview query returned {} rows", results.size());
+        for (Object[] row : results) {
+            log.debug("Row: month={}, year={}, pending={}, overdue={}", row[0], row[1], row[6], row[7]);
+        }
+
         List<RentReportResponse.MonthlyRentOverview> overview = new ArrayList<>();
         for (Object[] row : results) {
             int month = ((Number) row[0]).intValue();
@@ -201,6 +209,7 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
             long paidCount = ((Number) row[4]).longValue();
             long partialCount = ((Number) row[5]).longValue();
             long pendingCount = ((Number) row[6]).longValue();
+            long overdueCount = ((Number) row[7]).longValue();
             BigDecimal outstanding = rentDue.subtract(collected);
 
             String monthName = java.time.Month.of(month).name();
@@ -215,6 +224,7 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
                     .paidCount(paidCount)
                     .partialCount(partialCount)
                     .pendingCount(pendingCount)
+                    .overdueCount(overdueCount)
                     .build());
         }
         return overview;
@@ -319,6 +329,20 @@ public class RentRepositoryCustomImpl implements RentRepositoryCustom {
             query.setParameter(i + 1, params.get(i));
         }
         return query.getResultList();
+    }
+
+    @Override
+    public long countUpcomingRents(LocalDate fromDate, LocalDate toDate) {
+        String sql = """
+            SELECT COUNT(*) FROM rents r
+            WHERE r.status IN ('PENDING', 'PARTIAL')
+            AND r.due_date >= ? AND r.due_date <= ?
+            """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter(1, fromDate);
+        query.setParameter(2, toDate);
+        return ((Number) query.getSingleResult()).longValue();
     }
 
     private void addFilters(StringBuilder whereClause, List<Object> params, Long tenantId, Long propertyId,

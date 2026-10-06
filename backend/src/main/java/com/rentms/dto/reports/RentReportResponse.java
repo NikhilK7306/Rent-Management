@@ -56,5 +56,6 @@ public class RentReportResponse {
         private long paidCount;
         private long partialCount;
         private long pendingCount;
+        private long overdueCount;
     }
 }

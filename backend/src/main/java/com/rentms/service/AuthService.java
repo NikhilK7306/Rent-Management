@@ -50,10 +50,10 @@ public class AuthService {
             throw new UserInactiveException("Account is not active. Please contact administrator.");
         }
 
-        if (user.getRole() != User.Role.ADMIN) {
-            log.warn("User does not have ADMIN role: mobileNumber={}, role={}", 
+        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.TENANT) {
+            log.warn("User does not have valid role: mobileNumber={}, role={}", 
                     request.getMobileNumber(), user.getRole());
-            throw new InvalidCredentialsException("Access denied. Admin role required.");
+            throw new InvalidCredentialsException("Access denied. Invalid role.");
         }
 
         log.debug("Generating JWT token for user: {}", user.getMobileNumber());
@@ -83,10 +83,10 @@ public class AuthService {
             throw new UserInactiveException("Account is not active. Please contact administrator.");
         }
 
-        if (user.getRole() != User.Role.ADMIN) {
-            log.warn("User does not have ADMIN role: mobileNumber={}, role={}", 
+        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.TENANT) {
+            log.warn("User does not have valid role: mobileNumber={}, role={}", 
                     mobileNumber, user.getRole());
-            throw new InvalidCredentialsException("Access denied. Admin role required.");
+            throw new InvalidCredentialsException("Access denied. Invalid role.");
         }
 
         log.debug("Generating new JWT token for user: {}", mobileNumber);

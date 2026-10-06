@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { TenantService } from '@core/services/tenant.service';
 import { PropertyService } from '@core/services/property.service';
 import { Tenant, TenantPage, TenantStatus, TENANT_STATUSES } from '@core/models/tenant.model';
@@ -22,6 +22,7 @@ export class TenantListComponent implements OnInit {
   private tenantService = inject(TenantService);
   private propertyService = inject(PropertyService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private toastService = inject(ToastService);
 
   tenants = signal<Tenant[]>([]);
@@ -47,6 +48,15 @@ export class TenantListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadTenants();
+    this.handleQueryParams();
+  }
+
+  handleQueryParams(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['add'] === 'true') {
+        this.openAddModal();
+      }
+    });
   }
 
   loadTenants(): void {

@@ -84,9 +84,9 @@ public class RentService {
             throw new DuplicateRentException("Rent record already exists for this tenant/property/month/year");
         }
 
-        // Calculate due date (e.g., 1st of the month)
+        // Calculate due date (end of the month)
         LocalDate dueDate = request.getDueDate() != null ? request.getDueDate() :
-                LocalDate.of(request.getRentYear(), request.getRentMonth(), 1);
+                YearMonth.of(request.getRentYear(), request.getRentMonth()).atEndOfMonth();
 
         Rent rent = Rent.builder()
                 .tenant(tenant)
@@ -178,6 +178,27 @@ public class RentService {
         }
 
         return RentResponse.from(updated);
+    }
+
+    @Transactional
+    public void deleteRent(Long id) {
+        log.info("Deleting rent with id: {}", id);
+        
+        Rent rent = rentRepository.findById(id)
+                .orElseThrow(() -> new RentNotFoundException("Rent not found with id: " + id));
+        
+        // Check if rent has payments
+        if (rent.getPayments() != null && !rent.getPayments().isEmpty()) {
+            throw new RentException("Cannot delete rent record because it has associated payments. Rent ID: " + id);
+        }
+        
+        // Check if rent is fully paid
+        if (rent.getStatus() == Rent.Status.PAID) {
+            throw new RentException("Cannot delete rent record because it is fully paid. Rent ID: " + id);
+        }
+        
+        rentRepository.delete(rent);
+        log.info("Rent deleted successfully with id: {}", id);
     }
 
     private Rent.Status convertToEntityStatus(RentStatusRequest.Status dtoStatus) {
@@ -287,7 +308,7 @@ public class RentService {
             } else {
                 // Create rent record
                 LocalDate dueDate = request.getDueDate() != null ? request.getDueDate() :
-                        LocalDate.of(currentYear, currentMonth, 1);
+                        YearMonth.of(currentYear, currentMonth).atEndOfMonth();
 
                 Rent rent = Rent.builder()
                         .tenant(tenantRepository.findById(request.getTenantId()).orElseThrow())
@@ -441,8 +462,8 @@ public class RentService {
             return;
         }
 
-        // Calculate due date (1st of the month)
-        LocalDate dueDate = LocalDate.of(currentYear, currentMonth, 1);
+        // Calculate due date (end of the month)
+        LocalDate dueDate = YearMonth.of(currentYear, currentMonth).atEndOfMonth();
 
         // Create rent record
         Rent rent = Rent.builder()
@@ -497,7 +518,7 @@ public class RentService {
             }
 
             // Create rent record
-            LocalDate dueDate = LocalDate.of(currentYear, currentMonth, 1);
+            LocalDate dueDate = YearMonth.of(currentYear, currentMonth).atEndOfMonth();
 
             Rent rent = Rent.builder()
                     .tenant(tenant)
@@ -533,6 +554,13 @@ public class RentService {
         } catch (Exception e) {
             log.error("Error during scheduled rent generation", e);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RentResponse> getRentsByTenantMobileNumber(String mobileNumber, Pageable pageable) {
+        log.debug("Fetching rents for tenant mobile number: {}", mobileNumber);
+        Page<Rent> rents = rentRepository.findByTenantMobileNumber(mobileNumber, pageable);
+        return rents.map(this::mapToResponse);
     }
 
     private String getMonthName(int month) {

@@ -89,7 +89,8 @@ public class User implements UserDetails {
     }
 
     public enum Role {
-        ADMIN
+        ADMIN,
+        TENANT
     }
 
     public enum Status {

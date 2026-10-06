@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { PropertyService } from '@core/services/property.service';
 import { Property, PropertyPage, PropertyStatus, PROPERTY_TYPES, PROPERTY_STATUSES } from '@core/models/property.model';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -18,6 +18,7 @@ import { PropertyDetailComponent } from './property-detail.component';
 export class PropertyListComponent implements OnInit {
   private propertyService = inject(PropertyService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   properties = signal<Property[]>([]);
   isLoading = signal(false);
@@ -42,6 +43,15 @@ export class PropertyListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProperties();
+    this.handleQueryParams();
+  }
+
+  handleQueryParams(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['add'] === 'true') {
+        this.showAddModal.set(true);
+      }
+    });
   }
 
   loadProperties(): void {
